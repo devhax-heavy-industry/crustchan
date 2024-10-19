@@ -1,8 +1,7 @@
 resource "aws_instance" "ec2" {
-  count                       = 1
 
   ami                         = "ami-0ea3c35c5c3284d82" # ubuntu 24.04
-  instance_type               = "t3.micro"
+  instance_type               = "t2.micro"
 
   subnet_id                   = aws_subnet.public_subnet.id
   vpc_security_group_ids      = [aws_security_group.ec2_security_group.id]
@@ -17,7 +16,7 @@ resource "aws_instance" "ec2" {
 
 
 resource "aws_security_group" "ec2_security_group" {
-  name        = cc-security-group
+  name        = "cc-security-group"
   description = "security group for ec2 instances"
 
   vpc_id      = aws_vpc.vpc.id
@@ -57,13 +56,30 @@ resource "aws_security_group" "ec2_security_group" {
 
 resource "aws_key_pair" "ec2_key_pair" {
   key_name   = "free-tier-ec2-key"
-  public_key = file("id_rsa.pub")
+  public_key = file("ssh-key.pub")
 }
 
 resource "aws_s3_bucket" "app_resources" {
   bucket = "crust-chan-res"
-  acl    = "public-read"
-  
+  # acl    = "public-read"
+  policy = <<EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::crust-chan-res/*"
+            ]
+        }
+    ]
+}
+EOF
   website {
     index_document = "index.html"
     error_document = "error.html"
