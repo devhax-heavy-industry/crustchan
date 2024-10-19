@@ -1,4 +1,11 @@
 terraform {
+  cloud {
+    organization = "devhax"
+    workspaces {
+      name = "crustchan"
+    }
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
