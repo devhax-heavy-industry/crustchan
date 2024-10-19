@@ -5,16 +5,16 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "aws_access_key" {
+variable "AWS_ACCESS_KEY_ID" {
   description = "The AWS key"
 
 }
 
-variable "aws_access_secret" {
+variable "AWS_SECRET_ACCESS_KEY" {
   description = "The AWS secret"
 
 }
-variable "aws_default_region" {
+variable "AWS_DEFAULT_REGION" {
   description = "The AWS default region"
   default     = "us-west-2"
 }
