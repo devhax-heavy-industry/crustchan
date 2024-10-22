@@ -1,0 +1,13 @@
+[package]
+name = "crust-chan"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+warp = { version="0.3", features = ["compression", "multipart", "websocket"]}
+tokio = { version = "1", features = ["rt", "macros", "rt-multi-thread"] }
+serde = {version = "1.0.210", features = ["derive"]}
+tracing-subscriber = {version="0.3.18", features = ["env-filter", "fmt", "json"]}
+tracing = "0.1.40"
+bytes = "1.8.0"
+futures-util = "0.3.31"

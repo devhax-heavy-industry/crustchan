@@ -85,3 +85,88 @@ EOF
     error_document = "error.html"
   }
 }
+
+resource "aws_dynamodb_table" "crustchan_posts" {
+  name           = "crustchan-database"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+  attribute {
+    name = "id"
+    type = "S"
+  }
+  attribute {
+    name = "board"
+    type = "S"
+  }
+  attribute {
+    name = "poster"
+    type = "S"
+  }
+  attribute {
+    name = "createdAt"
+    type = "S"
+  }
+  attribute {
+    name = "image"
+    type = "S"
+  }
+  attribute {
+    name = "subject"
+    type = "S"
+  }
+  attribute {
+    name = "text"
+    type = "S"
+  }
+  attribute {
+    name = "deleted"
+    type = "B"
+  }
+  attribute {
+    name = "soft_banned"
+    type = "B"
+  }
+  attribute {
+    name = "locked"
+    type = "B"
+  }
+  attribute {
+    name = "sticky"
+    type = "B"
+  }
+  attribute {
+    name = "public_banned"
+    type = "S"
+  }
+  attribute {
+    name = "OP"
+    type = "S"
+  }
+  attribute {
+    name = "IP"
+    type = "S"
+  }
+  attribute {
+    name = "fileName"
+    type = "S"
+  }
+  attribute {
+    name = "fileSize"
+    type = "S"
+  }
+  attribute {
+    name = "fileDimensions"
+    type = "S"
+  }
+  
+  attribute {
+    name = "fileOriginalName"
+    type = "S"
+  }
+  
+
+  tags = {
+    environment = var.environment
+  }
+  
+}
