@@ -9,6 +9,7 @@ use tracing_subscriber::fmt::format::FmtSpan;
 
 pub mod admin;
 pub mod post;
+pub mod model;
 
 #[derive(Serialize)]
 #[derive(Debug)]
