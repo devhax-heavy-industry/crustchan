@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use uuid::Uuid;
 use serde::{Deserialize, Serialize, Serializer};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Post {
   pub id: String,
   pub subject: String,
@@ -61,12 +61,22 @@ impl Default for Post {
   }
 }
 
-
+#[derive(Debug, Serialize)]
 pub struct Board {
   pub id: String,
   pub name: String,
   pub description: String,
   pub sfw: bool,
+  #[serde(serialize_with = "serialize_dt")]
+  pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct Admin {
+  pub username: String,
+  pub passwprd: String,
+  #[serde(serialize_with = "serialize_dt")]
+  pub created_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Deserialize)]

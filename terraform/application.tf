@@ -90,6 +90,7 @@ resource "aws_dynamodb_table" "crustchan_posts" {
   name           = "crustchan-database"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "id"
+  range_key = "created_at"
   attribute {
     name = "id"
     type = "S"
@@ -103,11 +104,7 @@ resource "aws_dynamodb_table" "crustchan_posts" {
     type = "S"
   }
   attribute {
-    name = "createdAt"
-    type = "S"
-  }
-  attribute {
-    name = "image"
+    name = "created_at"
     type = "S"
   }
   attribute {
@@ -139,7 +136,7 @@ resource "aws_dynamodb_table" "crustchan_posts" {
     type = "S"
   }
   attribute {
-    name = "OP"
+    name = "op"
     type = "S"
   }
   attribute {
@@ -147,23 +144,41 @@ resource "aws_dynamodb_table" "crustchan_posts" {
     type = "S"
   }
   attribute {
-    name = "fileName"
+    name = "file_name"
     type = "S"
   }
   attribute {
-    name = "fileSize"
+    name = "file_size"
     type = "S"
   }
   attribute {
-    name = "fileDimensions"
+    name = "file_dimensions"
     type = "S"
   }
   
   attribute {
-    name = "fileOriginalName"
+    name = "file_original_name"
     type = "S"
   }
   
+    global_secondary_index {
+    name               = "board-index"
+    hash_key           = "board"
+    range_key = "created_at"
+    projection_type    = "ALL"
+  }
+  global_secondary_index {
+    name               = "ip-index"
+    hash_key           = "IP"
+    range_key = "created_at"
+    projection_type    = "ALL"
+  }
+  global_secondary_index {
+    name               = "session-index"
+    hash_key           = "session"
+    range_key = "created_at"
+    projection_type    = "ALL"
+  }
 
   tags = {
     environment = var.environment
