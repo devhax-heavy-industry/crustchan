@@ -69,7 +69,7 @@ impl Into<HashMap<std::string::String, aws_sdk_dynamodb::types::AttributeValue>>
     item.insert("subject".to_string(), AttributeValue::S(self.subject));
     item.insert("text".to_string(), AttributeValue::S(self.text));
     item.insert("poster".to_string(), AttributeValue::S(self.poster) );
-    item.insert("board".to_string(), AttributeValue::S(self.board));
+    item.insert("board_id".to_string(), AttributeValue::S(self.board_id));
     item.insert("ip".to_string(), AttributeValue::S(self.ip));
     item.insert("file".to_string(), AttributeValue::S(self.file));
     item.insert("deleted".to_string(), AttributeValue::Bool(self.deleted));
@@ -88,7 +88,7 @@ impl Into<HashMap<std::string::String, aws_sdk_dynamodb::types::AttributeValue>>
   }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone,Deserialize)]
 pub struct Board {
   pub id: String,
   pub name: String,

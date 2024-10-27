@@ -4,7 +4,7 @@
     use tracing::info;
     use std::error::Error;
     use tokio::sync::OnceCell;
-    use crate::model::Post;
+    use crate::model::{Post,Board};
 
     pub const TABLES: &[&str] = &["posts", "boards", "admin"];
 
@@ -72,3 +72,20 @@
         // let user: User = from_item(item)?;
         Ok(posts)
     }
+
+    pub async fn create_board(board: Board) -> Result<PutItemOutput, Box<dyn Error>> {
+      let client:&DynamoDbClient = get_client().await;
+      let item = to_item(board.clone())?;
+
+      let input = PutItemInput {
+        table_name: POSTS_TABLE_NAME.to_string(),
+        item,
+        ..Default::default()
+       };
+
+      let output = client
+          .put_item(input)
+          .await?;
+
+      Ok(output)
+  }

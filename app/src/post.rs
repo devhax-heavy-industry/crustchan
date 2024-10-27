@@ -16,8 +16,7 @@ use tracing::{error, info};
 use uuid::Uuid;
 use warp::filters::BoxedFilter;
 use warp::multipart::FormData;
-use warp::reply::json;
-use warp::{Buf, Filter, Reply};
+use warp::{Buf, Filter, Reply, Rejection};
 // POST /api/posts
 
 pub fn post_route() -> BoxedFilter<(impl Reply,)> {
@@ -72,9 +71,9 @@ pub async fn post_handler(form: FormData, addr: Option<SocketAddr>) -> WebResult
                     .await
                     .map_err(|e| {
                         error!("reading file error: {}", e);
-                        warp::reject::custom(FileReadError)
-                    })?;
-                let value_string = String::from_utf8(field_value).unwrap().to_owned();
+                        let _ = Err::<GenericResponse, Rejection>(warp::reject::custom(FileReadError));
+                    });
+                let value_string = String::from_utf8(field_value.unwrap()).unwrap().to_owned();
                 post.ip = addr.unwrap().to_string();
                 match field_name.as_str() {
                     "subject" => post.subject = value_string.to_string(),
@@ -90,11 +89,11 @@ pub async fn post_handler(form: FormData, addr: Option<SocketAddr>) -> WebResult
     }
 
     if post.board_id.is_empty() {
-        let response_json = &GenericResponse {
-            status: "failure".to_string(),
-            message: "Board must be supplied".to_string(),
-        };
-        return Ok(json(response_json));
+      let response = GenericResponse::new(
+          warp::http::StatusCode::BAD_REQUEST,
+          "Board must be supplied".to_string());
+
+        return Ok(response);
     }
     if post.text.is_empty() {
         error!("Text body must be supplied");
@@ -105,7 +104,7 @@ pub async fn post_handler(form: FormData, addr: Option<SocketAddr>) -> WebResult
     }
 
     // create db entry
-    let __db_post = create_post(post.clone());
+    let __db_post = create_post(post.clone()).await.unwrap();
     let message: String = format!("post: {:?}", post.clone());
 
     let response= GenericResponse::new(warp::http::StatusCode::CREATED, message); 
@@ -121,7 +120,7 @@ pub fn posts_by_board_route() -> BoxedFilter<(impl Reply,)> {
 }
 pub async fn list_posts_by_board_handler( board_id:String) -> WebResult<impl Reply> {
     info!("list_posts_by_board_handler:");
-    let posts = list_posts_by_board(board_id).await.unwrap()
+    let posts = list_posts_by_board(board_id).await.unwrap();
 
 
     let message: String = format!("{:?}", posts);
@@ -129,6 +128,7 @@ pub async fn list_posts_by_board_handler( board_id:String) -> WebResult<impl Rep
     let response = GenericResponse::new(warp::http::StatusCode::OK, message);
     Ok(response)
 }
+
 
 
 async fn save_part_to_file(path: &str, part: warp::multipart::Part) -> Result<(), std::io::Error> {

@@ -1,4 +1,3 @@
-use serde_derive::{Serialize};
 use std::convert::Infallible;
 use crate::GenericResponse;
 use tracing::info;
@@ -19,13 +18,6 @@ impl reject::Reject for UnsupportedMediaType {}
 pub struct FileReadError;
 
 impl reject::Reject for FileReadError {}
-
-/// An API error serializable to JSON.
-#[derive(Serialize)]
-struct ErrorMessage {
-    code: u16,
-    message: String,
-}
 
 pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
     let code;

@@ -96,68 +96,24 @@ resource "aws_dynamodb_table" "crustchan_posts" {
     type = "S"
   }
   attribute {
-    name = "board"
-    type = "S"
-  }
-  attribute {
-    name = "poster"
+    name = "board_id"
     type = "S"
   }
   attribute {
     name = "created_at"
     type = "S"
   }
-  attribute {
-    name = "subject"
-    type = "S"
-  }
-  attribute {
-    name = "text"
-    type = "S"
-  }
-  attribute {
-    name = "deleted"
-    type = "B"
-  }
-  attribute {
-    name = "soft_banned"
-    type = "B"
-  }
-  attribute {
-    name = "locked"
-    type = "B"
-  }
-  attribute {
-    name = "sticky"
-    type = "B"
-  }
-  attribute {
-    name = "public_banned"
-    type = "S"
-  }
+
   attribute {
     name = "op"
     type = "S"
   }
   attribute {
-    name = "IP"
+    name = "ip"
     type = "S"
   }
   attribute {
     name = "file_name"
-    type = "S"
-  }
-  attribute {
-    name = "file_size"
-    type = "S"
-  }
-  attribute {
-    name = "file_dimensions"
-    type = "S"
-  }
-  
-  attribute {
-    name = "file_original_name"
     type = "S"
   }
   
@@ -169,7 +125,13 @@ resource "aws_dynamodb_table" "crustchan_posts" {
   }
   global_secondary_index {
     name               = "ip-index"
-    hash_key           = "IP"
+    hash_key           = "ip"
+    range_key = "created_at"
+    projection_type    = "ALL"
+  }
+  global_secondary_index {
+    name               = "OP-index"
+    hash_key           = "op"
     range_key = "created_at"
     projection_type    = "ALL"
   }
@@ -184,4 +146,34 @@ resource "aws_dynamodb_table" "crustchan_posts" {
     environment = var.environment
   }
   
+}
+
+
+resource "aws_dynamodb_table" "crustchan_boards" {
+  name           = "crustchan-database"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+  range_key = "created_at"
+  attribute {
+    name = "id"
+    type = "S"
+  }
+    attribute {
+    name = "name"
+    type = "S"
+  }
+    attribute {
+    name = "created_at"
+    type = "S"
+  }
+
+    global_secondary_index {
+    name               = "name-index"
+    hash_key           = "name"
+    range_key = "created_at"
+    projection_type    = "ALL"
+  }
+    tags = {
+    environment = var.environment
+  }
 }

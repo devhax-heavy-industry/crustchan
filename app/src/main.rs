@@ -1,5 +1,4 @@
 use crate::admin::admin_routes;
-use serde::Serialize;
 use std::env;
 use std::net::Ipv4Addr;
 // use boards::list_boards;
@@ -65,7 +64,7 @@ async fn main() {
     let routes = post_route().boxed()
         .or(admin_routes().boxed())
         .with(warp::compression::gzip()) //; //.or(list_boards);
-        .with(warp::log("api"))
+        .with(warp::log("crustchan"))
         .with(warp::trace::request())
         .recover(handle_rejection);
 
