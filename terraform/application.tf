@@ -1,6 +1,6 @@
 resource "aws_instance" "ec2" {
 
-  ami                         = "ami-0ea3c35c5c3284d82" # ubuntu 24.04
+  ami                         = "ami-00756a2b7a21e2bd3" # ubuntu 24.04
   instance_type               = "t2.micro"
 
   subnet_id                   = aws_subnet.public_subnet.id
