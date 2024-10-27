@@ -6,19 +6,38 @@ use std::net::Ipv4Addr;
 use crate::post::post_route;
 use crate::rejections::handle_rejection;
 use tracing_subscriber::fmt::format::FmtSpan;
-use warp::{Filter, Rejection};
+use warp::{Filter, Rejection, Reply};
 pub mod admin;
 pub mod dynamodb;
 pub mod model;
 pub mod post;
 pub mod rejections;
 
-#[derive(Serialize, Debug)]
+
+#[derive(Debug)]
 pub struct GenericResponse {
-    pub status: String,
+    pub status_code: warp::http::StatusCode,
     pub message: String,
 }
 
+impl Reply for GenericResponse {
+    fn into_response(self) -> warp::reply::Response {
+        warp::reply::with_status(
+            warp::reply::json(&self.message).into_response(),
+            self.status_code,
+        )
+        .into_response()
+    }
+}
+
+impl GenericResponse {
+    pub fn new(status_code: warp::http::StatusCode, message: String) -> Self {
+        Self {
+            status_code,
+            message,
+        }
+    }
+}
 type WebResult<T> = std::result::Result<T, Rejection>;
 
 const CONTENT_LIMIT: u64 = 1024 * 1024 * 25; // 25 MB
@@ -43,8 +62,8 @@ async fn main() {
         Err(_) => 3000,
     };
 
-    let routes = post_route()
-        .or(admin_routes())
+    let routes = post_route().boxed()
+        .or(admin_routes().boxed())
         .with(warp::compression::gzip()) //; //.or(list_boards);
         .with(warp::log("api"))
         .with(warp::trace::request())

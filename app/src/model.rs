@@ -1,13 +1,15 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 use serde::{Deserialize, Serialize, Serializer};
+use aws_sdk_dynamodb::types::AttributeValue;
+use std::collections::HashMap;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone,Deserialize)]
 pub struct Post {
   pub id: String,
   pub subject: String,
   pub text: String,
-  pub board: String,
+  pub board_id: String,
   pub poster: String,
   pub file: String,
   pub ip: String,
@@ -42,7 +44,7 @@ impl Default for Post {
           subject: "".to_string(),
           text: "".to_string(),
           poster: "".to_string(),
-          board: "".to_string(),
+          board_id: "".to_string(),
           ip: "".to_string(),
           file: "".to_string(),
           deleted: false,
@@ -61,6 +63,31 @@ impl Default for Post {
   }
 }
 
+impl Into<HashMap<std::string::String, aws_sdk_dynamodb::types::AttributeValue>> for Post {
+  fn into(self) -> HashMap<std::string::String, aws_sdk_dynamodb::types::AttributeValue> {
+    let mut item = HashMap::new();
+    item.insert("subject".to_string(), AttributeValue::S(self.subject));
+    item.insert("text".to_string(), AttributeValue::S(self.text));
+    item.insert("poster".to_string(), AttributeValue::S(self.poster) );
+    item.insert("board".to_string(), AttributeValue::S(self.board));
+    item.insert("ip".to_string(), AttributeValue::S(self.ip));
+    item.insert("file".to_string(), AttributeValue::S(self.file));
+    item.insert("deleted".to_string(), AttributeValue::Bool(self.deleted));
+    item.insert("soft_banned".to_string(), AttributeValue::Bool(self.soft_banned) );
+    item.insert("locked".to_string(), AttributeValue::Bool(self.locked) );
+    item.insert("approved".to_string(), AttributeValue::Bool(self.approved));
+    item.insert("sticky".to_string(), AttributeValue::Bool(self.sticky) );
+    item.insert("public_banned".to_string(), AttributeValue::S(if self.public_banned.is_none(){"".to_string()} else { self.public_banned.unwrap()} ));
+    item.insert("op".to_string(), AttributeValue::S(self.op) );
+    item.insert("file_name".to_string(), AttributeValue::S(self.file_name) );
+    item.insert("file_size".to_string(), AttributeValue::N(self.file_size.to_string()) );
+    item.insert("file_dimensions".to_string(), AttributeValue::S(self.file_dimensions) );
+    item.insert("file_original_name".to_string(), AttributeValue::S(self.file_original_name) );
+    item.insert("created_at".to_string(), AttributeValue::S(self.created_at.to_string()) );
+    item
+  }
+}
+
 #[derive(Debug, Serialize)]
 pub struct Board {
   pub id: String,
@@ -70,6 +97,8 @@ pub struct Board {
   #[serde(serialize_with = "serialize_dt")]
   pub created_at: DateTime<Utc>,
 }
+
+
 
 #[derive(Debug, Serialize)]
 pub struct Admin {

@@ -13,3 +13,11 @@ bytes = "1.8.0"
 futures-util = "0.3.31"
 uuid = {version="1.11.0", features=["v4"]}
 chrono = "0.4.38"
+aws-config = "1.5.9"
+aws-sdk-dynamodb = "1.51.0"
+anyhow = "1.0.91"
+serde_dynamo = { version = "4", features = ["rusoto_dynamodb+0_48"] }
+serde_derive = "1.0.213"
+image = "0.25.4"
+rusoto_core = { version = "0.48", default-features = false, features = ["rustls"] }
+rusoto_dynamodb = { version = "0.48", default-features = false, features = ["rustls"] }

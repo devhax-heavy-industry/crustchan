@@ -1,5 +1,6 @@
 use serde_derive::{Serialize};
 use std::convert::Infallible;
+use crate::GenericResponse;
 use tracing::info;
 use warp::http::StatusCode;
 use warp::{reject, Rejection, Reply};
@@ -34,13 +35,13 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
     if err.is_not_found() {
         code = StatusCode::NOT_FOUND;
         message = "NOT_FOUND";
-    } else if let Some(e) = err.find::<InvalidParameter>() {
+    } else if let Some(_e) = err.find::<InvalidParameter>() {
         message = "BAD_REQUEST";
         code = StatusCode::BAD_REQUEST;
-    } else if let Some(e) = err.find::<UnsupportedMediaType>() {
+    } else if let Some(_e) = err.find::<UnsupportedMediaType>() {
         message = "UNSUPPORTED_MEDIA_TYPE";
         code = StatusCode::UNSUPPORTED_MEDIA_TYPE;
-    } else if let Some(e) = err.find::<FileReadError>() {
+    } else if let Some(_e) = err.find::<FileReadError>() {
         message = "FILE_READ_ERROR";
         code = StatusCode::BAD_REQUEST;
     } else if let Some(_) = err.find::<warp::reject::MethodNotAllowed>() {
@@ -55,10 +56,8 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
         message = "UNHANDLED_REJECTION";
     }
 
-    let json = warp::reply::json(&ErrorMessage {
-        code: code.as_u16(),
-        message: message.into(),
-    });
 
-    Ok(warp::reply::with_status(json, code))
+    let response = GenericResponse::new(code, message.into());
+
+    Ok(warp::reply::with_status(response, code))
 }

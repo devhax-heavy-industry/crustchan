@@ -33,9 +33,9 @@ pub fn admin_list_posts_by_ip() -> BoxedFilter<(impl Reply,)> {
 }
 
 pub fn admin_routes() -> BoxedFilter<(impl Reply,)> {
-    admin_ban()
-        .or(admin_list_posts_by_session())
-        .or(admin_list_posts_by_ip())
+    admin_ban().boxed()
+        .or(admin_list_posts_by_session().boxed())
+        .or(admin_list_posts_by_ip().boxed())
         .boxed()
 }
 
