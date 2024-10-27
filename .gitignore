@@ -11,3 +11,5 @@ __queuestorage__
 __azurite_db*__.json
 .env
 target/
+.aws
+.DS_Store
