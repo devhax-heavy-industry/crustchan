@@ -59,8 +59,16 @@ resource "aws_key_pair" "ec2_key_pair" {
   public_key = file("ssh-key.pub")
 }
 
+resource "aws_s3_bucket" "app_resources" {
+  bucket = "crustchan-resources"
+
+  tags = {
+    Name        = "Crustchan Resources"
+    Environment = "Dev"
+  }
+}
 resource "aws_s3_bucket_website_configuration" "app_resources" {
-  bucket = "crust-chan-res"
+  bucket = aws_s3_bucket.app_resources.id
   # acl    = "public-read"
   index_document {
     suffix = "index.html"
