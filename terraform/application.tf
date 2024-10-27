@@ -113,13 +113,17 @@ resource "aws_dynamodb_table" "crustchan_posts" {
     type = "S"
   }
   attribute {
+    name = "session"
+    type = "S"
+  }
+  attribute {
     name = "file_name"
     type = "S"
   }
   
     global_secondary_index {
     name               = "board-index"
-    hash_key           = "board"
+    hash_key           = "board_id"
     range_key = "created_at"
     projection_type    = "ALL"
   }
