@@ -177,3 +177,33 @@ resource "aws_dynamodb_table" "crustchan_boards" {
     environment = var.environment
   }
 }
+
+
+resource "aws_dynamodb_table" "crustchan_admin" {
+  name           = "crustchan-database"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+  range_key = "created_at"
+  attribute {
+    name = "id"
+    type = "S"
+  }
+    attribute {
+    name = "username"
+    type = "S"
+  }
+    attribute {
+    name = "created_at"
+    type = "S"
+  }
+
+    global_secondary_index {
+    name               = "username-index"
+    hash_key           = "username"
+    range_key = "created_at"
+    projection_type    = "ALL"
+  }
+    tags = {
+    environment = var.environment
+  }
+}

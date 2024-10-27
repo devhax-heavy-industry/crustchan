@@ -102,8 +102,9 @@ pub struct Board {
 
 #[derive(Debug, Serialize)]
 pub struct Admin {
+  pub id: String,
   pub username: String,
-  pub passwprd: String,
+  pub password: String,
   #[serde(serialize_with = "serialize_dt")]
   pub created_at: DateTime<Utc>,
 }
