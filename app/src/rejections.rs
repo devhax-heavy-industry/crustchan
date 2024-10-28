@@ -39,6 +39,7 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
     } else if let Some(_) = err.find::<warp::reject::MethodNotAllowed>() {
         // We can handle a specific error, here METHOD_NOT_ALLOWED,
         // and render it however we want
+        info!("MethodNotAllowed {:?}", err);
         code = StatusCode::METHOD_NOT_ALLOWED;
         message = "METHOD_NOT_ALLOWED";
     } else {

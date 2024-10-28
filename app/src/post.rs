@@ -6,7 +6,7 @@ use crate::WebResult;
 use crate::CONTENT_LIMIT;
 use anyhow::Result;
 use bytes::BufMut;
-use futures_util::TryStreamExt;
+use futures_util::{FutureExt, TryStreamExt};
 use image::ImageReader;
 use std::ffi::OsStr;
 use std::fs;
@@ -19,15 +19,7 @@ use warp::multipart::FormData;
 use warp::{Buf, Filter, Reply, Rejection};
 // POST /api/posts
 
-pub fn post_route() -> BoxedFilter<(impl Reply,)> {
-    warp::multipart::form()
-        .and(warp::path("api"))
-        .and(warp::path("posts"))
-        .and(warp::body::content_length_limit(CONTENT_LIMIT))
-        .and(warp::addr::remote())
-        .and_then(post_handler)
-        .boxed()
-}
+
 
 pub async fn post_handler(form: FormData, addr: Option<SocketAddr>) -> WebResult<impl Reply> {
     info!("post_handler:");
@@ -102,30 +94,38 @@ pub async fn post_handler(form: FormData, addr: Option<SocketAddr>) -> WebResult
     if post.poster.is_empty() {
         post.poster = "Anonymous".to_string();
     }
+    if post.op.is_empty() {
+        post.op = "NULL".to_string();
+    }
 
     // create db entry
     let __db_post = create_post(post.clone()).await.unwrap();
-    let message: String = format!("post: {:?}", post.clone());
-
-    let response= GenericResponse::new(warp::http::StatusCode::CREATED, message); 
+    let json_string = serde_json::to_string(&__db_post.attributes).unwrap();
+    let response= GenericResponse::new(warp::http::StatusCode::CREATED, json_string); 
     info!("Response: {:?}", response);
     Ok(response)
 }
 
-pub fn posts_by_board_route() -> BoxedFilter<(impl Reply,)> {
-    warp::get()
-      .and(warp::path!("api" / "board" / String))
-      .and_then(list_posts_by_board_handler)
-      .boxed()
+
+pub async fn list_posts_by_prog_handler() -> WebResult<impl Reply> {
+    let board_id = "prog".to_string();
+    info!("list_posts_by_PROG_handler:");
+    // let posts = list_posts_by_board(board_id).await.unwrap();
+
+    let json_string = serde_json::to_string("wooooo").unwrap();
+
+    let response = GenericResponse::new(warp::http::StatusCode::OK, json_string);
+    Ok(response)
 }
+
+
 pub async fn list_posts_by_board_handler( board_id:String) -> WebResult<impl Reply> {
     info!("list_posts_by_board_handler:");
     let posts = list_posts_by_board(board_id).await.unwrap();
 
+    let json_string = serde_json::to_string(&posts).unwrap();
 
-    let message: String = format!("{:?}", posts);
-
-    let response = GenericResponse::new(warp::http::StatusCode::OK, message);
+    let response = GenericResponse::new(warp::http::StatusCode::OK, json_string);
     Ok(response)
 }
 
@@ -151,4 +151,37 @@ fn get_image_dimensions(file_path: &str) -> Result<(u32, u32)> {
     let reader = ImageReader::open(path)?;
     let dimensions = reader.into_dimensions()?;
     Ok(dimensions)
+}
+
+
+pub fn post_route() -> BoxedFilter<(impl Reply,)> {
+    warp::post()
+        .and(warp::multipart::form())
+        .and(warp::path("api"))
+        .and(warp::path("posts"))
+        .and(warp::body::content_length_limit(CONTENT_LIMIT))
+        .and(warp::addr::remote())
+        .and_then(post_handler)
+        .boxed()
+}
+pub fn post_routes() -> BoxedFilter<(impl Reply,)> {
+    prog_posts_route()
+    .or(posts_by_board_route())
+    .or(warp::post().and(post_route()))
+    .boxed()
+}
+pub fn posts_by_board_route() -> BoxedFilter<(impl Reply,)> {
+    warp::get()
+      .and(warp::path!("api" / "board" / String ))
+      .and(warp::body::content_length_limit(CONTENT_LIMIT))
+      .and_then(list_posts_by_board_handler)
+      .boxed()
+}
+
+pub fn prog_posts_route() -> BoxedFilter<(impl Reply,)> {
+   return warp::get()
+    .and(warp::path("api"))
+    .and(warp::path("prog"))
+    .and_then(list_posts_by_prog_handler)
+    .boxed();
 }

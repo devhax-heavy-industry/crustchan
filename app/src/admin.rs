@@ -9,7 +9,7 @@ use serde_dynamo::{to_item,from_item, Item,AttributeValue};
 use warp::filters::BoxedFilter;
 use warp::{Reply, Buf, Filter};
 use serde_json::from_str;
-use crate::model::Board;
+use crate::model::{Board,BoardInput};
 
 pub fn admin_ban() -> BoxedFilter<(impl Reply,)> {
     warp::post()
@@ -53,23 +53,14 @@ pub async fn ban_handler() -> WebResult<impl Reply> {
     Ok(response)
 }
 
-pub async fn create_board_handler(json_body:Board) -> WebResult<impl Reply> {
+pub async fn create_board_handler(json_body:BoardInput) -> WebResult<impl Reply> {
   info!("list_posts_by_board_handler:");
-  // let item: Item = json_body.into();
-  // let board = from_item::<Item, Board>(item).unwrap();
-  // let serde_string: String =  json_body.serialize().unwrap();
-  // let json_string = serde_json::to_string(&json_body).unwrap();
-  // let board = from_str::<Board>(json_string.as_str());
-  // let item = to_item(json_string)?;
-  // let posts = create_board(board).await.unwrap();
+  let board:Board = json_body.into(); 
 
-  let msg = format!("json body: {json_body:?}");
-  info!(msg);
+  let __db_board = create_board(board.clone()).await.unwrap();
+  let message: String = format!("board: {:?}", board.clone());
 
-
-  // let message: String = format!("{:?}", posts);
-
-  let response = GenericResponse::new(warp::http::StatusCode::OK, msg);
+  let response = GenericResponse::new(warp::http::StatusCode::OK, message);
   Ok(response)
 }
 
