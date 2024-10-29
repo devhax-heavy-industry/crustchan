@@ -1,57 +1,55 @@
-use crate::admin::admin_routes;
+pub mod admin;
+pub mod auth;
+pub mod board;
+pub mod dynamodb;
+pub mod middleware;
+pub mod models;
+pub mod post;
+pub mod rejections;
+pub mod response;
+
 use std::env;
 use std::net::Ipv4Addr;
 // use boards::list_boards;
-use crate::post::{post_routes,prog_posts_route};
+use crate::admin::admin_routes;
 use crate::board::board_routes;
+use crate::models::Admin;
+use crate::post::post_routes;
 use crate::rejections::handle_rejection;
+use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
-use warp::{Filter, Rejection, Reply, reply::Json, http::Response};
-use warp::http::header::{ HeaderValue, CONTENT_TYPE};
-use warp::hyper::Body;
-pub mod admin;
-pub mod dynamodb;
-pub mod model;
-pub mod post;
-pub mod board;
-pub mod rejections;
+use warp::{Filter, Rejection};
 
 
-
-#[derive(Debug)]
-pub struct GenericResponse {
-    pub status_code: warp::http::StatusCode,
-    pub message: String,
-}
-impl Reply for GenericResponse {
-         fn into_response(self) -> Response<Body> {
-            let mut response = Response::new(self.message.into());
-            response.headers_mut().insert(
-                "Content-Type",
-                HeaderValue::from_static("application/json"),
-            );
-            *response.status_mut() = self.status_code;
-            response
-         }
-     }
-
-    
-impl GenericResponse {
-    pub fn new(status_code: warp::http::StatusCode, message: String) -> Self {
-        Self {
-            status_code,
-            message,
-        }
-    }
-}
-type WebResult<T> = std::result::Result<T, Rejection>;
 
 const CONTENT_LIMIT: u64 = 1024 * 1024 * 25; // 25 MB
 
+pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
+    let admin_user = dynamodb::get_any_admin_user().await;
+    match admin_user {
+        Ok(admin) => {
+            info!("An admin user exists");
+            return Ok(admin);
+        }
+        Err(e) => {
+            info!("No admin user exists, creating one now...{e:?}");
+
+            let admin_user = Admin {
+                username: "admin".to_string(),
+                password: Admin::hash_password("changeme".to_string()).await.unwrap(),
+                ..Default::default()
+            };
+            let _created_admin_output = dynamodb::create_admin(admin_user.clone()).await;
+            let created_admin: Admin = dynamodb::get_admin_user(admin_user.username).await.unwrap();
+            return Ok(created_admin);
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() {
-    let log_filter =
-        std::env::var("RUST_LOG").unwrap_or_else(|_| "tracing=info,warp=debug,crustchan=debug".to_owned());
+    let log_filter = std::env::var("RUST_LOG")
+        .unwrap_or_else(|_| "tracing=info,warp=debug,crustchan=debug".to_owned());
     tracing_subscriber::fmt()
         // .text()
         .with_thread_names(false)
@@ -68,7 +66,9 @@ async fn main() {
         Err(_) => 3000,
     };
 
-    let routes = post_routes().boxed()
+    // load up our project's routes
+    let routes = post_routes()
+        .boxed()
         .or(board_routes().boxed())
         .or(admin_routes().boxed())
         .with(warp::compression::gzip()) //; //.or(list_boards);
@@ -76,7 +76,9 @@ async fn main() {
         .with(warp::trace::request())
         .recover(handle_rejection);
 
+    // check for the existance of an admin user, creating one if not found
+    let _admin = check_for_admin_user().await;
+
+    // start the http server
     warp::serve(routes).run((Ipv4Addr::LOCALHOST, port)).await
 }
-
-

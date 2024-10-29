@@ -1,27 +1,83 @@
-use crate::model::{Board, Post};
-use serde::Serialize;
+use serde::{Deserialize, Deserializer, Serializer, Serialize};
+use warp::http::header::HeaderValue;
+use warp::hyper::Body;
+use warp::reject::Rejection;
+use warp::{http::Response, Reply};
 
-#[derive(Serialize)]
-pub struct GenericResponse {
-    pub status: String,
-    pub message: String,
+pub type WebResult<T> = std::result::Result< GenericResponse<T>, Rejection>;
+
+// pub trait New<'a, T> {
+//     fn new<T:Serializer>(&mut self, status_code:&'a StatusCode, message: T) -> Self;
+// }
+// pub trait New<T> {
+//     fn new<T:Serializer>(&mut self, status_code:StatusCode, message: T) -> Self;
+// }
+∂
+#[derive(Debug, Clone)]
+pub struct GenericResponse<T> {
+    pub status_code: warp::http::StatusCode,
+    pub message: T,
+}
+impl<T> Default for GenericResponse<T> 
+    where T: Default {
+    fn default() -> Self {
+        Self {
+            status_code: warp::http::StatusCode::OK,
+            message: T::default(),
+        }
+    }
+}
+impl<'a,T> GenericResponse<T> {
+    pub fn new<E:Serialize + Default +Deserialize<'a>>(status_code: warp::http::StatusCode, message: E) -> GenericResponse<E> {
+                let mut ret = GenericResponse::default();
+                ret.status_code = status_code;
+                ret.message = message;
+                ret
+            }
 }
 
-#[derive(Serialize, Debug)]
-pub struct PostData {
-    pub post: Post,
-}
+impl<T> Reply for GenericResponse<T> 
+where T: Serialize + std::marker::Send {
+        fn into_response(self) -> Response<Body> {
+            let mut response = Response::new(serde_json::to_string(&self.message).unwrap().into());
+            response
+                .headers_mut()
+                .insert("Content-Type", HeaderValue::from_static("application/json"));
+            *response.status_mut() = self.status_code;
+            response
+        }
+    }
 
-#[derive(Serialize, Debug)]
-pub struct PostListResponse {
-    pub status: String,
-    pub results: usize,
-    pub posts: Vec<Post>,
+#[derive(Debug, Clone)]
+pub struct ApiError<T> {
+    pub status_code: warp::http::StatusCode,
+    pub message: T,
 }
-
-#[derive(Serialize, Debug)]
-pub struct BoardListResponse {
-    pub status: String,
-    pub results: usize,
-    pub boards: Vec<Board>,
+impl<T> Default for ApiError<T>
+where T: Default {
+    fn default() -> Self {
+        Self {
+            status_code: warp::http::StatusCode::OK,
+            message: T::default(),
+        }
+    }
+}
+impl<'a,T>  ApiError<T> {
+    pub fn new<E:Serialize + Default +Deserialize<'a>>(status_code: warp::http::StatusCode, message: E) -> ApiError<E> {
+        let mut ret = ApiError::default();
+        ret.status_code = status_code;
+        ret.message = message;
+        ret
+    }
+}
+impl<T> Reply for ApiError<T> 
+where T: Serialize + std::marker::Send {
+    fn into_response(self) -> Response<Body> {
+        let mut response = Response::new(serde_json::to_string(&self.message).unwrap().into());
+        response
+            .headers_mut()
+            .insert("Content-Type", HeaderValue::from_static("application/json"));
+        *response.status_mut() = self.status_code;
+        response
+    }
 }

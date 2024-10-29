@@ -1,13 +1,24 @@
+use crate::response::{GenericResponse, ApiError};
 use std::convert::Infallible;
-use crate::GenericResponse;
+use serde::Serializer;
 use tracing::info;
-use warp::http::StatusCode;
+use warp::http::{StatusCode};
 use warp::{reject, Rejection, Reply};
 
 #[derive(Debug)]
 pub struct InvalidParameter;
 
 impl reject::Reject for InvalidParameter {}
+
+#[derive(Debug)]
+pub struct InvalidLogin;
+
+impl reject::Reject for InvalidLogin {}
+
+#[derive(Debug)]
+pub struct InvalidUser;
+
+impl reject::Reject for InvalidUser {}
 
 #[derive(Debug)]
 pub struct UnsupportedMediaType;
@@ -18,6 +29,45 @@ impl reject::Reject for UnsupportedMediaType {}
 pub struct FileReadError;
 
 impl reject::Reject for FileReadError {}
+#[derive(Debug)]
+pub struct Unauthorized;
+
+impl reject::Reject for Unauthorized {}
+
+pub enum Rejections {
+    InvalidParameter(InvalidParameter),
+    InvalidLogin(InvalidLogin),
+    InvalidUser(InvalidUser),
+    UnsupportedMediaType(UnsupportedMediaType),
+    FileReadError(FileReadError),
+    Unauthorized(Unauthorized),
+    HashError(HashError),
+}
+impl reject::Reject for HashError {}
+
+#[derive(Debug)]
+pub struct HashError;
+
+// impl From<argonautica::Error> for Rejections {
+//     fn from(_e: argonautica::Error) -> Self {
+//         Rejections(HashError)
+//     }
+// }
+// impl From<ApiError<T>> for Rejection {
+//     fn from(e: ApiError<T>) -> Self {
+//         warp::reject::custom(e.message)
+//     }
+// }
+// impl From<argonautica::Error> for HashError {
+//     fn from(e: argonautica::Error) -> Self {
+//         match e.kind() {
+//             _ => {
+//                 dbg!(e.kind());
+//                 Rejections::Unauthorized
+//             }
+//         }
+//     }
+// }
 
 pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
     let code;
@@ -49,8 +99,7 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
         message = "UNHANDLED_REJECTION";
     }
 
-
-    let response = GenericResponse::new(code, message.into());
+    let response: ApiError<String> = ApiError::<String>::new(code, message.to_string());
 
     Ok(warp::reply::with_status(response, code))
 }

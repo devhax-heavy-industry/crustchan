@@ -9,7 +9,7 @@ tokio = { version = "1", features = ["rt", "macros", "rt-multi-thread"] }
 serde = {version = "1.0.210", features = ["derive"]}
 tracing-subscriber = {version="0.3.18", features = ["env-filter", "fmt", "json"]}
 tracing = {version = "0.1.40", features= ["log-always"]}
-bytes = { version = "1.8.0", features = ["serde"] }
+bytes = { version = "0.4.12"}
 futures-util = "0.3.31"
 uuid = {version="1.11.0", features=["v4"]}
 chrono = "0.4.38"
@@ -23,4 +23,10 @@ rusoto_core = { version = "0.48", default-features = false, features = ["rustls"
 rusoto_dynamodb = { version = "0.48", default-features = false, features = ["rustls"] }
 serde_json = "1.0.132"
 unescape = "0.1.0"
+argonautica = "0.2.0"
+rust-crypto = "0.2.36"
+rand = "0.7.3"
+ed25519-dalek = {version = "1.0.0"}
+lazy_static = "1.5.0"
+base64 = "0.22.1"
 
