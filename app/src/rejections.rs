@@ -99,7 +99,7 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
         message = "UNHANDLED_REJECTION";
     }
 
-    let response: ApiError<String> = ApiError::<String>::new(code, message.to_string());
+    let response: ApiError = ApiError::new(code, message.to_string());
 
     Ok(warp::reply::with_status(response, code))
 }
