@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use warp::reject::Rejection;
 use warp::Reply;
+use base64::prelude::*;
 
 const KEYS_FOLDER: &'static str = "./.cache/keys"; // WARNING pass via configMap, use fs::Path
 lazy_static::lazy_static! {
@@ -20,12 +21,12 @@ lazy_static::lazy_static! {
 pub struct Claims {
     pub iat: i64,
     pub exp: i64,
-    pub userID: i64,
+    pub user_id: i64,
 }
 impl Claims {
-    fn from_user_id(user_id: i64) -> Self {
+    fn from_user_id(local_user_id: i64) -> Self {
         Self {
-            userID: user_id,
+            user_id: local_user_id,
             iat: Local::now().timestamp(),
             exp: (Local::now() + Duration::hours(24)).timestamp(),
         }
@@ -33,7 +34,7 @@ impl Claims {
     fn hash(&self) -> [u8; 32] {
         let mut ret = [0u8; 32];
         let mut hasher = Blake2b::new(32);
-        hasher.input(&self.userID.to_be_bytes());
+        hasher.input(&self.user_id.to_be_bytes());
         hasher.input(&self.iat.to_be_bytes());
         hasher.input(&self.exp.to_be_bytes());
         hasher.result(&mut ret);
@@ -59,14 +60,14 @@ impl AuthnToken {
         }
         KEYPAIR_AUTHN
             .verify(&self.claims.hash(), &self.sig)
-            .map_err(|_| warp::reject::custom(Unauthorized));
+            .map_err(|_| warp::reject::custom(Unauthorized))?;
         Ok(())
     }
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut b = Bytes::new();
         b.extend_from_slice(&self.claims.iat.to_be_bytes());
         b.extend_from_slice(&self.claims.exp.to_be_bytes());
-        b.extend_from_slice(&self.claims.userID.to_be_bytes());
+        b.extend_from_slice(&self.claims.user_id.to_be_bytes());
         b.extend_from_slice(&self.sig.to_bytes());
         // b.len is 88
         b.to_vec()
@@ -78,19 +79,19 @@ impl AuthnToken {
         buf.copy_from_slice(&bytes[8..16]);
         let exp: i64 = i64::from_be_bytes(buf);
         buf.copy_from_slice(&bytes[16..24]);
-        let userID: i64 = i64::from_be_bytes(buf);
+        let user_id: i64 = i64::from_be_bytes(buf);
 
         let sig: Signature = Signature::from_bytes(&bytes[24..])?;
         Ok(AuthnToken {
-            claims: Claims { iat, exp, userID },
+            claims: Claims { iat, exp, user_id },
             sig,
         })
     }
     pub fn to_str(&self) -> String {
-        base64::encode(&self.to_bytes())
+        BASE64_STANDARD.encode(&self.to_bytes())
     }
     pub fn from_str(token: &str) -> Result<Self, AnyErr> {
-        let bytes = base64::decode(&token)?;
+        let bytes = BASE64_STANDARD.decode(&token)?;
         Ok(Self::from_bytes(&bytes)?)
     }
     pub fn header_val(&self) -> String {
@@ -128,10 +129,10 @@ impl KeyPair {
         self.0.to_bytes()
     }
     pub fn from_str(s: &str) -> Result<Self, AnyErr> {
-        Ok(Self::from_bytes(&base64::decode(s)?.to_vec())?)
+        Ok(Self::from_bytes(&BASE64_STANDARD.decode(s)?.to_vec())?)
     }
     pub fn to_str(&self) -> String {
-        base64::encode(self.to_bytes().to_vec())
+        BASE64_STANDARD.encode(self.to_bytes().to_vec())
     }
     fn to_file(&self, keyfile: &str) -> Result<&Self, AnyErr> {
         fs::create_dir_all(KEYS_FOLDER)?;
@@ -147,9 +148,9 @@ impl KeyPair {
         match Self::from_file(&keyfile) {
             Ok(identity) => Ok(identity),
             Err(_err) => {
-                let newWallet = Self::generate();
-                newWallet.to_file(&keyfile)?;
-                Ok(newWallet)
+                let new_wallet = Self::generate();
+                new_wallet.to_file(&keyfile)?;
+                Ok(new_wallet)
             }
         }
     }

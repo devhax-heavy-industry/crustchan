@@ -5,7 +5,6 @@ use crustchan::response::{GenericResponse, WebResult};
 use std::path::PathBuf;
 // use futures_util::{FutureExt, StreamExt, TryStreamExt};
 use image::ImageReader;
-use std::ffi::OsStr;
 use std::net::SocketAddr;
 use std::path::Path;
 use tracing::{error, info};
@@ -176,21 +175,6 @@ pub async fn list_posts_by_board_handler(board_id: String) -> WebResult {
     Ok(response)
 }
 
-async fn save_part_to_file(path: &str, part: warp::multipart::Part) -> Result<(), std::io::Error> {
-    let data = part
-        .stream()
-        .try_fold(Vec::new(), |mut acc, buf| async move {
-            acc.extend_from_slice(buf.chunk());
-            Ok(acc)
-        })
-        .await
-        .expect("folding error");
-    std::fs::write(path, data)
-}
-
-fn get_extension_from_filename(filename: &str) -> Option<&str> {
-    Path::new(filename).extension().and_then(OsStr::to_str)
-}
 fn get_image_dimensions(file_path: &str) -> Result<(u32, u32)> {
     let path = Path::new(file_path);
     let reader = ImageReader::open(path)?;
