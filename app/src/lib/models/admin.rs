@@ -3,9 +3,9 @@ use crate::rejections::{HashError, InvalidLogin};
 use argonautica::Hasher;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use tokio::sync::OnceCell;
 use uuid::Uuid;
 use warp::Rejection;
-use tokio::sync::OnceCell;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Admin {
@@ -15,7 +15,7 @@ pub struct Admin {
     #[serde(serialize_with = "serialize_dt", deserialize_with = "deserialize_dt")]
     pub created_at: DateTime<Utc>,
 }
-impl<'a> Admin{
+impl<'a> Admin {
     pub async fn get_secret_key() -> &'static String {
         static SECRET_KEY: OnceCell<String> = OnceCell::const_new();
         SECRET_KEY
@@ -33,7 +33,8 @@ impl<'a> Admin{
         Ok(Hasher::default()
             .with_password(password)
             .with_secret_key(secret.as_str())
-            .hash().unwrap())
+            .hash()
+            .unwrap())
     }
     pub async fn login(username: String, password: String) -> Result<Admin, Rejection> {
         let admin: Admin = crate::dynamodb::get_admin_user(username.clone())

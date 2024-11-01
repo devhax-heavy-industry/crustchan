@@ -9,17 +9,13 @@ use std::net::Ipv4Addr;
 // use boards::list_boards;
 use admin::admin_routes;
 use board::board_routes;
-use crustchan::models::Admin;
-use post::post_routes;
 use crustchan::dynamodb;
+use crustchan::models::Admin;
 use crustchan::rejections::handle_rejection;
+use post::post_routes;
 use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{Filter, Rejection};
-
-
-
-const CONTENT_LIMIT: u64 = 1024 * 1024 * 25; // 25 MB
 
 pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
     let admin_user = dynamodb::get_any_admin_user().await;
@@ -64,8 +60,8 @@ async fn main() {
     };
 
     // load up our project's routes
-    let routes = 
-        post_routes().boxed()
+    let routes = post_routes()
+        .boxed()
         .or(board_routes().boxed())
         .or(admin_routes().boxed())
         .with(warp::compression::gzip()) //; //.or(list_boards);

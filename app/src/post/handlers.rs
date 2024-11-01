@@ -1,7 +1,7 @@
+use anyhow::Result;
 use crustchan::dynamodb::{create_post, list_posts_by_board};
 use crustchan::models::Post;
-use crustchan::response::{WebResult, GenericResponse};
-use anyhow::Result;
+use crustchan::response::{GenericResponse, WebResult};
 use std::path::PathBuf;
 // use futures_util::{FutureExt, StreamExt, TryStreamExt};
 use image::ImageReader;
@@ -11,10 +11,10 @@ use std::path::Path;
 use tracing::{error, info};
 use warp::multipart::FormData;
 
-use futures::TryStreamExt;
-use warp::Buf;
-use futures_util::StreamExt;
 use futures::future;
+use futures::TryStreamExt;
+use futures_util::StreamExt;
+use warp::Buf;
 
 //  async fn run() {
 //  let data = "--X-BOUNDARY\r\nContent-Disposition: form-data; \
@@ -41,62 +41,77 @@ pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebRe
             None => "".to_string(), //return Ok(GenericResponse::new(warp::http::StatusCode::BAD_REQUEST, "Missing filename".to_string())),
         };
         if filename == "" {
-            let values_res = part.stream().then(|result| {
-                let binding = result.unwrap();
-                let slice = binding.chunk();
-                let value_as_str = std::str::from_utf8(slice).unwrap();
-                future::ok::<_, ()>(value_as_str.to_string())
-            }).collect::<Vec<_>>().await;
-            let value_str:String = values_res.into_iter().map(|x| x.unwrap()).collect();
-            
-            match name.as_str()  {
+            let values_res = part
+                .stream()
+                .then(|result| {
+                    let binding = result.unwrap();
+                    let slice = binding.chunk();
+                    let value_as_str = std::str::from_utf8(slice).unwrap();
+                    future::ok::<_, ()>(value_as_str.to_string())
+                })
+                .collect::<Vec<_>>()
+                .await;
+            let value_str: String = values_res.into_iter().map(|x| x.unwrap()).collect();
+
+            match name.as_str() {
                 "subject" => post.subject = value_str.to_string(),
                 "text" => post.text = value_str.to_string(),
                 "board_id" => post.board_id = value_str.to_string(),
                 "name" => post.poster = value_str.to_string(),
                 "op" => post.op = value_str.to_string(),
-                _ => info!("name not found in form input {name}")//Err(warp::reject::custom(InvalidParameter))?,
+                _ => info!("name not found in form input {name}"), //Err(warp::reject::custom(InvalidParameter))?,
             }
+        } else {
+            println!("Receiving file: {}", filename);
+
+            let mut data = Vec::new();
+            let mut stream = part.stream();
+
+            while let Ok(Some(mut chunk)) = stream.try_next().await {
+                let slice: &[u8] = chunk.chunk();
+                data.extend_from_slice(slice);
+                chunk.advance(slice.len());
+            }
+
+            let save_path = PathBuf::from(format!("/tmp/uploads/{}", filename));
+            let filepath = save_path.to_str().unwrap().to_string();
+            post.file = filepath.to_owned();
+            post.file_name = filename.to_owned();
+            post.file_size = data.len() as u64;
+            post.file_original_name = filename.to_owned();
+            let created_dir_result = tokio::fs::create_dir_all(PathBuf::from("/tmp/uploads")).await;
+            match created_dir_result {
+                Err(_) => {
+                    return Ok(GenericResponse::new(
+                        warp::http::StatusCode::INTERNAL_SERVER_ERROR,
+                        "Failed to create files dir".to_string(),
+                    ))
+                }
+                Ok(_) => {
+                    info!("Dir created successfully");
+                }
+            }
+            match tokio::fs::write(&save_path, &data).await {
+                Err(_) => {
+                    return Ok(GenericResponse::new(
+                        warp::http::StatusCode::INTERNAL_SERVER_ERROR,
+                        "Failed to save file".to_string(),
+                    ))
+                }
+                Ok(_) => {
+                    info!("File saved successfully");
+                }
+            };
+
+            let file_dimensions = get_image_dimensions(filepath.as_str()).unwrap();
+            post.file_dimensions = format!("{}x{}", file_dimensions.0, file_dimensions.1);
+
+            // let s3_response = upload_to_s3(save_path).await.unwrap();
+            // match s3_response {
+            //     Ok(_) => { info!("File uploaded to S3 successfully"); }
+            //     Err(_) => return Ok(GenericResponse::new(warp::http::StatusCode::INTERNAL_SERVER_ERROR, "Failed to upload file to S3".to_string())),
+            // }
         }
-        else {
-        println!("Receiving file: {}", filename);
-
-        let mut data = Vec::new();
-        let mut stream = part.stream();
-        
-        while let Ok(Some(mut chunk)) = stream.try_next().await {
-            let slice: &[u8] = chunk.chunk();
-            data.extend_from_slice(slice);
-            chunk.advance(slice.len());
-        }
-
-        let save_path = PathBuf::from(format!("/tmp/uploads/{}", filename));
-        let filepath = save_path.to_str().unwrap().to_string();
-        post.file = filepath.to_owned();
-        post.file_name = filename.to_owned();
-        post.file_size = data.len() as u64;
-        post.file_original_name = filename.to_owned();
-        let created_dir_result = tokio::fs::create_dir_all(PathBuf::from("/tmp/uploads")).await;
-        match created_dir_result {
-            Err(_) => return Ok(GenericResponse::new(warp::http::StatusCode::INTERNAL_SERVER_ERROR, "Failed to create files dir".to_string())),
-            Ok(_) => { info!("Dir created successfully"); }
-        }
-        match tokio::fs::write(&save_path, &data).await {
-            Err(_) => return Ok(GenericResponse::new(warp::http::StatusCode::INTERNAL_SERVER_ERROR, "Failed to save file".to_string())),
-            Ok(_) => { info!("File saved successfully"); }
-        };
-
-        let file_dimensions = get_image_dimensions(filepath.as_str()).unwrap();
-        post.file_dimensions = format!("{}x{}", file_dimensions.0, file_dimensions.1);
-
-        
-        // let s3_response = upload_to_s3(save_path).await.unwrap();
-        // match s3_response {
-        //     Ok(_) => { info!("File uploaded to S3 successfully"); }
-        //     Err(_) => return Ok(GenericResponse::new(warp::http::StatusCode::INTERNAL_SERVER_ERROR, "Failed to upload file to S3".to_string())),
-        // }
-        
-    }
     }
     post.ip = addr.unwrap().to_string();
     dbg!(&post);
@@ -126,9 +141,7 @@ pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebRe
     let response = GenericResponse::new(warp::http::StatusCode::CREATED, post.clone());
     info!("Response: {:?}", response);
     Ok(response)
-    
 }
-
 
 // pub async fn upload_to_s3(path:PathRef) -> Result<rusoto_s3::PutObjectOutput, Box<dyn std::error::Error>> {
 //     let bucket = std::env::var("S3_BUCKET").unwrap();

@@ -5,7 +5,7 @@ use warp::{Filter, Reply};
 
 pub fn post_route() -> BoxedFilter<(impl Reply,)> {
     warp::path!("api" / "posts")
-    .and(warp::post())
+        .and(warp::post())
         .and(warp::multipart::form())
         .and(warp::body::content_length_limit(CONTENT_LIMIT))
         .and(warp::addr::remote())

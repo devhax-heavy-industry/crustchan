@@ -1,4 +1,3 @@
-
 use crate::models::{Admin, Board, Post};
 use crate::rejections::InvalidUser;
 use crate::AWS_REGION;

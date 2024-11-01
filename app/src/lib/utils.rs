@@ -1,5 +1,3 @@
-
-
 /// Setup tracing
 pub fn setup_tracing() {
     let subscriber = tracing_subscriber::fmt()

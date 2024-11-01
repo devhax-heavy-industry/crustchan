@@ -1,5 +1,5 @@
 use crustchan::dynamodb::{get_post_by_id, list_boards};
-use crustchan::response::{WebResult,GenericResponse};
+use crustchan::response::{GenericResponse, WebResult};
 use tracing::info;
 
 pub async fn get_post_by_id_handler(board_id: String, post_id: String) -> WebResult {

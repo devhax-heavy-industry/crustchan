@@ -1,13 +1,13 @@
 use crate::auth::AuthnToken;
-use crustchan::models::{Admin, Board };
+use crustchan::dynamodb::create_board;
+use crustchan::models::{Admin, Board};
 use crustchan::rejections::InvalidUser;
 use crustchan::response::{GenericResponse, WebResult};
-use crustchan::dynamodb::create_board;
-use warp::reply::WithHeader;
-use warp::Reply;
 use std::collections::HashMap;
-use tracing::{info, error};
+use tracing::{error, info};
+use warp::reply::WithHeader;
 use warp::Rejection;
+use warp::Reply;
 
 pub async fn ban_handler(_token: impl Reply) -> WebResult {
     info!("ban_handler:");
@@ -18,10 +18,13 @@ pub async fn ban_handler(_token: impl Reply) -> WebResult {
     Ok(response)
 }
 
-pub async fn create_board_handler(_token: AuthnToken, json_body:  HashMap<String, String> ) -> WebResult {
+pub async fn create_board_handler(
+    _token: AuthnToken,
+    json_body: HashMap<String, String>,
+) -> WebResult {
     info!("create_board_handler:");
     let json_str = serde_json::to_string(&json_body).unwrap();
-    let board:Board = serde_json::from_str(&json_str).unwrap();
+    let board: Board = serde_json::from_str(&json_str).unwrap();
     let __db_board = create_board(board.clone()).await.unwrap();
     let message: String = format!("board: {:?}", board.clone());
 
@@ -37,7 +40,9 @@ pub async fn admin_lists_posts_by_ip_handler(_token: impl Reply) -> WebResult {
     Ok(response)
 }
 
-pub async fn login_handler(json_body: HashMap<String, String>) -> Result<WithHeader<GenericResponse>, Rejection> {
+pub async fn login_handler(
+    json_body: HashMap<String, String>,
+) -> Result<WithHeader<GenericResponse>, Rejection> {
     info!("login_handler:");
     let username = json_body.get("username").unwrap();
     let password = json_body.get("password").unwrap();
@@ -46,7 +51,8 @@ pub async fn login_handler(json_body: HashMap<String, String>) -> Result<WithHea
         .map_err(|e| {
             error!("login error: {:?}", e);
             let _ = warp::reject::custom(InvalidUser);
-        }).unwrap();
+        })
+        .unwrap();
     let user_id = result.id.parse::<i64>().unwrap();
     let token = AuthnToken::from_user_id(user_id).unwrap();
     let msg = format!("Welcome back, {}", result.username);
