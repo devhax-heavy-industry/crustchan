@@ -1,21 +1,18 @@
 pub mod admin;
 pub mod auth;
 pub mod board;
-pub mod dynamodb;
 pub mod middleware;
-pub mod models;
 pub mod post;
-pub mod rejections;
-pub mod response;
 
 use std::env;
 use std::net::Ipv4Addr;
 // use boards::list_boards;
-use crate::admin::admin_routes;
-use crate::board::board_routes;
-use crate::models::Admin;
-use crate::post::post_routes;
-use crate::rejections::handle_rejection;
+use admin::admin_routes;
+use board::board_routes;
+use crustchan::models::Admin;
+use post::post_routes;
+use crustchan::dynamodb;
+use crustchan::rejections::handle_rejection;
 use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{Filter, Rejection};
@@ -67,8 +64,8 @@ async fn main() {
     };
 
     // load up our project's routes
-    let routes = post_routes()
-        .boxed()
+    let routes = 
+        post_routes().boxed()
         .or(board_routes().boxed())
         .or(admin_routes().boxed())
         .with(warp::compression::gzip()) //; //.or(list_boards);
@@ -76,7 +73,7 @@ async fn main() {
         .with(warp::trace::request())
         .recover(handle_rejection);
 
-    // check for the existance of an admin user, creating one if not found
+    // check for the existence of an admin user, creating one if not found
     let _admin = check_for_admin_user().await;
 
     // start the http server

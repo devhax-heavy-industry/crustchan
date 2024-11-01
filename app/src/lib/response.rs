@@ -1,4 +1,4 @@
-use serde::{Deserialize, Deserializer, Serializer, Serialize};
+use serde::Serialize;
 use warp::http::header::HeaderValue;
 use warp::hyper::Body;
 use warp::reject::Rejection;

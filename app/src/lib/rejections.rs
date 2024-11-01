@@ -1,8 +1,7 @@
-use crate::response::{GenericResponse, ApiError};
+use crate::response::ApiError;
 use std::convert::Infallible;
-use serde::Serializer;
 use tracing::info;
-use warp::http::{StatusCode};
+use warp::http::StatusCode;
 use warp::{reject, Rejection, Reply};
 
 #[derive(Debug)]

@@ -29,4 +29,24 @@ rand = "0.7.3"
 ed25519-dalek = {version = "1.0.0" , features=["serde"]}
 lazy_static = "1.5.0"
 base64 = "0.22.1"
+futures = "0.3.31"
+pathbuf = "1.0.0"
+multer = {version= "3.1.0", features = ["all"] }
+
+[[bin]]
+name = "crustchan-api"
+path = "src/main.rs"
+test = false
+
+[[bin]]
+name = "crustchan-approve-post"
+path = "src/bin/lambda/approve-post.rs"
+test = false
+required-features = ["lambda"]
+
+[lib]
+name = "crustchan"
+path = "src/lib/lib.rs"
+test = false
+
 

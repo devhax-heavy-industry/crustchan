@@ -6,9 +6,9 @@
     <h1>Test</h1>
     <form action="http://localhost:3000/api/posts" method="post" enctype="multipart/form-data">
         <input type="text" name="name" placeholder="Name"/>
-        
-        <input type="text" name="subject" placeholder="Name"/>
-        <input type="text" name="text" placeholder="Name"/>
+        <input type="hidden" name="board_id" value="prog"/>
+        <input type="text" name="subject" placeholder="subject"/>
+        <input type="text" name="text" placeholder="Body"/>
         <input type="file" name="image"/>
         <input type="submit" value="Submit"/>
     </form>

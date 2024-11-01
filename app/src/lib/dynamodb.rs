@@ -1,7 +1,7 @@
 
 use crate::models::{Admin, Board, Post};
 use crate::rejections::InvalidUser;
-use rusoto_core::Region;
+use crate::AWS_REGION;
 use rusoto_dynamodb::{
     AttributeValue, DynamoDb, DynamoDbClient, PutItemInput, PutItemOutput, QueryInput, ScanInput,
 };
@@ -28,7 +28,7 @@ pub async fn get_client() -> &'static DynamoDbClient {
     static CLIENT: OnceCell<DynamoDbClient> = OnceCell::const_new();
     CLIENT
         .get_or_init(|| async {
-            let client = DynamoDbClient::new(Region::UsWest2);
+            let client = DynamoDbClient::new(AWS_REGION);
             client
         })
         .await
@@ -103,7 +103,7 @@ pub async fn create_board(board: Board) -> Result<PutItemOutput, Box<dyn Error>>
     info!("Created board item: {:?}", output.clone());
     Ok(output)
 }
-pub async fn get_post_by_id(board_id: String, post_id: String) -> Result<Post, Box<dyn Error>> {
+pub async fn get_post_by_id(_board_id: String, post_id: String) -> Result<Post, Box<dyn Error>> {
     let client: &DynamoDbClient = get_client().await;
     let input = QueryInput {
         table_name: POSTS_TABLE_NAME.to_string(),
@@ -136,8 +136,7 @@ pub async fn get_post_by_id(board_id: String, post_id: String) -> Result<Post, B
     let output = client.query(input).await?;
 
     let item = output.items.unwrap().pop().unwrap();
-
-    let post: Post = from_item(item)?;
+    let post: Post = from_item(item).unwrap();
 
     info!("get_post_by_id - Post: {:?}", post.clone());
     Ok(post)
