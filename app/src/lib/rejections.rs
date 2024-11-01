@@ -16,22 +16,23 @@ impl reject::Reject for InvalidLogin {}
 
 #[derive(Debug)]
 pub struct InvalidUser;
-
 impl reject::Reject for InvalidUser {}
 
 #[derive(Debug)]
 pub struct UnsupportedMediaType;
-
 impl reject::Reject for UnsupportedMediaType {}
 
 #[derive(Debug)]
 pub struct FileReadError;
-
 impl reject::Reject for FileReadError {}
+
 #[derive(Debug)]
 pub struct Unauthorized;
-
 impl reject::Reject for Unauthorized {}
+
+#[derive(Debug)]
+pub struct ConversionError;
+impl reject::Reject for ConversionError {}
 
 pub enum Rejections {
     InvalidParameter(InvalidParameter),
@@ -41,6 +42,7 @@ pub enum Rejections {
     FileReadError(FileReadError),
     Unauthorized(Unauthorized),
     HashError(HashError),
+    ConversionError(ConversionError),
 }
 impl reject::Reject for HashError {}
 

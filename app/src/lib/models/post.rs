@@ -2,6 +2,7 @@ use super::{deserialize_dt, serialize_dt};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use aws_lambda_events::s3::S3EventRecord; 
 
 #[derive(Debug, Serialize, Clone, Deserialize)]
 pub struct Post {

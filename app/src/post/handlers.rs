@@ -64,7 +64,7 @@ pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebRe
             let new_filename = format!("{}.{}", uuidv4, extension);
             let filepath = save_path.to_str().unwrap().to_string();
             post.file =new_filename.to_owned();
-            post.file_name = filename.to_owned();
+            post.file_name = new_filename.to_owned();
             post.file_size = data.len() as u64;
             post.file_original_name = filename.to_owned();
             let created_dir_result = tokio::fs::create_dir_all(PathBuf::from("/tmp/uploads")).await;

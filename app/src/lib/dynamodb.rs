@@ -1,6 +1,7 @@
-use crate::models::{Admin, Board, Post};
+use crate::models::{Admin, Board, Post, dynamodb::PostEvent};
 use crate::rejections::InvalidUser;
 use crate::AWS_REGION;
+use aws_lambda_events::event::dynamodb::Event;
 use rusoto_dynamodb::{
     AttributeValue, DynamoDb, DynamoDbClient, PutItemInput, PutItemOutput, QueryInput, ScanInput,
 };
@@ -8,8 +9,9 @@ use serde::Deserialize;
 use serde_dynamo::{from_item, to_item};
 use std::error::Error;
 use tokio::sync::OnceCell;
-use tracing::{info, warn};
+use tracing::{info, warn, instrument};
 use warp::Rejection;
+use lambda_runtime::Context;
 
 pub const TABLES: &[&str] = &["posts", "boards", "admin"];
 
@@ -23,6 +25,27 @@ pub struct QueryOptions {
     pub limit: Option<usize>,
 }
 
+/// Parse events from DynamoDB Streams
+#[instrument(skip(event))]
+pub async fn parse_dynamo_post_events(
+    event: Event,
+    _: Context
+) -> Result<(), anyhow::Error> {
+    info!("Transform events");
+    let events = event
+        .records
+        .iter()
+        .map(|record| record.clone().try_into())
+        .collect::<Result<Vec<PostEvent>, _>>()?;
+
+    info!("Dispatching {} events", events.len());
+    dbg!(&events);
+
+    Ok(())
+}
+
+
+
 pub async fn get_client() -> &'static DynamoDbClient {
     static CLIENT: OnceCell<DynamoDbClient> = OnceCell::const_new();
     CLIENT
@@ -32,14 +55,6 @@ pub async fn get_client() -> &'static DynamoDbClient {
         })
         .await
 }
-
-// get a list of all tables in dynamodb
-// pub async fn list_tables() -> Result<Vec<String>, Box<dyn Error>> {
-//   let client:&DynamoDbClient = get_client().await;
-//     let paginator = client.list_tables().into_paginator().items().send();
-//     let table_names = paginator.collect::<Result<Vec<_>, _>>().await?;
-//     Ok(table_names)
-// }
 
 pub async fn create_post(post: Post) -> Result<PutItemOutput, Box<dyn Error>> {
     let client: &DynamoDbClient = get_client().await;

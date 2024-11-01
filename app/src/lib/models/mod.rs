@@ -1,6 +1,7 @@
 pub mod admin;
 pub mod board;
 pub mod post;
+pub mod dynamodb;
 
 pub use admin::*;
 pub use board::*;

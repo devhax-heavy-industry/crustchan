@@ -17,6 +17,7 @@ use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{Filter, Rejection};
 
+
 pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
     let admin_user = dynamodb::get_any_admin_user().await;
     match admin_user {
@@ -39,8 +40,10 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
     }
 }
 
+
 #[tokio::main]
 async fn main() {
+    let static_route = warp::fs::dir("static");
     let log_filter = std::env::var("RUST_LOG")
         .unwrap_or_else(|_| "tracing=info,warp=debug,crustchan=debug".to_owned());
     tracing_subscriber::fmt()
@@ -60,8 +63,8 @@ async fn main() {
     };
 
     // load up our project's routes
-    let routes = post_routes()
-        .boxed()
+    let routes = static_route
+        .or(post_routes().boxed())
         .or(board_routes().boxed())
         .or(admin_routes().boxed())
         .with(warp::compression::gzip()) //; //.or(list_boards);
