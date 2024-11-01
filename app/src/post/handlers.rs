@@ -2,33 +2,20 @@ use anyhow::Result;
 use crustchan::dynamodb::{create_post, list_posts_by_board};
 use crustchan::models::Post;
 use crustchan::response::{GenericResponse, WebResult};
+use crustchan::AWS_REGION;
 use std::path::PathBuf;
 // use futures_util::{FutureExt, StreamExt, TryStreamExt};
 use image::ImageReader;
 use std::net::SocketAddr;
 use std::path::Path;
-use tracing::{error, info};
+use tracing::{error, info,warn};
 use warp::multipart::FormData;
-
+use std::io::Read;
+use rusoto_s3::S3;
 use futures::future;
 use futures::TryStreamExt;
 use futures_util::StreamExt;
 use warp::Buf;
-
-//  async fn run() {
-//  let data = "--X-BOUNDARY\r\nContent-Disposition: form-data; \
-//      name=\"my_text_field\"\r\n\r\nabcd\r\n--X-BOUNDARY--\r\n";
-
-//  let stream = once(async move { Result::<Bytes, Infallible>::Ok(Bytes::from(data)) });
-//  let mut multipart = Multipart::new(stream, "X-BOUNDARY");
-
-//  while let Some(field) = multipart.next_field().await.unwrap() {
-//      let content = field.text().await.unwrap();
-//      assert_eq!(content, "abcd");
-//  }
-// }
-// tokio::runtime::Runtime::new().unwrap().block_on(run());
-pub struct NotCopy;
 
 pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebResult {
     info!("post_handler:");
@@ -71,10 +58,12 @@ pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebRe
                 data.extend_from_slice(slice);
                 chunk.advance(slice.len());
             }
-
+            let uuidv4 = uuid::Uuid::new_v4();
             let save_path = PathBuf::from(format!("/tmp/uploads/{}", filename));
+            let extension = save_path.extension().unwrap().to_str().unwrap();
+            let new_filename = format!("{}.{}", uuidv4, extension);
             let filepath = save_path.to_str().unwrap().to_string();
-            post.file = filepath.to_owned();
+            post.file =new_filename.to_owned();
             post.file_name = filename.to_owned();
             post.file_size = data.len() as u64;
             post.file_original_name = filename.to_owned();
@@ -102,18 +91,22 @@ pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebRe
                 }
             };
 
+
+
             let file_dimensions = get_image_dimensions(filepath.as_str()).unwrap();
             post.file_dimensions = format!("{}x{}", file_dimensions.0, file_dimensions.1);
 
-            // let s3_response = upload_to_s3(save_path).await.unwrap();
-            // match s3_response {
-            //     Ok(_) => { info!("File uploaded to S3 successfully"); }
-            //     Err(_) => return Ok(GenericResponse::new(warp::http::StatusCode::INTERNAL_SERVER_ERROR, "Failed to upload file to S3".to_string())),
-            // }
+            let s3_response = upload_to_s3(&save_path, post.clone().file_name).await;
+            match s3_response {
+                Ok(_) => {
+                    info!("File uploaded to S3 successfully");
+                }
+                Err(_) =>{ warn!("Failed to upload file to S3");}
+            }
         }
     }
     post.ip = addr.unwrap().to_string();
-    dbg!(&post);
+    dbg!(&post.clone());
     // Ok(GenericResponse::new(warp::http::StatusCode::CREATED, "File uploaded".to_string()));
 
     if post.board_id.is_empty() {
@@ -142,30 +135,25 @@ pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebRe
     Ok(response)
 }
 
-// pub async fn upload_to_s3(path:PathRef) -> Result<rusoto_s3::PutObjectOutput, Box<dyn std::error::Error>> {
-//     let bucket = std::env::var("S3_BUCKET").unwrap();
-//     let region = std::env::var("S3_REGION").unwrap();
-//     let client = rusoto_s3::S3Client::new(rusoto_core::Region::Custom {
-//         name: region,
-//         endpoint: "http://localhost:9000".to_string(),
-//     });
+pub async fn upload_to_s3(path:&Path, new_filename:String) -> Result<rusoto_s3::PutObjectOutput, Box<dyn std::error::Error>> {
+    let bucket = std::env::var("S3_BUCKET").unwrap();
+    let client = rusoto_s3::S3Client::new(AWS_REGION);
 
-//     let file = std::fs::File::open(path).unwrap();
-//     let file_name = Path::new(&path).file_name().unwrap().to_str().unwrap();
-//     let key = format!("uploads/{}", file_name);
-//     let mut buffer = Vec::new();
-//     file.take(1024 * 1024 * 25).read_to_end(&mut buffer).unwrap();
+    let file = std::fs::File::open(path).unwrap();
+    let key = format!("uploads/{}", new_filename);
+    let mut buffer = Vec::new();
+    file.take(1024 * 1024 * 25).read_to_end(&mut buffer).unwrap();
 
-//     let request = rusoto_s3::PutObjectRequest {
-//         bucket: bucket,
-//         key: key,
-//         body: Some(buffer.into()),
-//         ..Default::default()
-//     };
+    let request = rusoto_s3::PutObjectRequest {
+        bucket: bucket,
+        key: key,
+        body: Some(buffer.into()),
+        ..Default::default()
+    };
 
-//     let response = client.put_object(request).await?;
-//     Ok(response)
-// }
+    let response = client.put_object(request).await?;
+    Ok(response)
+}
 
 pub async fn list_posts_by_board_handler(board_id: String) -> WebResult {
     info!("list_posts_by_board_handler:");
