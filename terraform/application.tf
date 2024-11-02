@@ -231,7 +231,7 @@ resource "aws_s3_object" "crustchan-lambda" {
   key    = "bootstrap.zip"
   source = data.archive_file.crustchan-bin.output_path
 
-  etag = filemd5(data.archive_file.lambda_hello_world.output_path)
+  etag = filemd5(data.archive_file.crustchan-bin.output_path)
 }
 resource "aws_s3_bucket_ownership_controls" "lambda_bucket" {
   bucket = aws_s3_bucket.lambda_bucket.id
@@ -256,7 +256,7 @@ module "lambda_function" {
   runtime       = "provided.al2"
   architectures = ["arm64"]
   create_package         = false
-  # local_existing_package = "../app/target/lambda/crustchan-approve-post/bootstrap.zip"
+  local_existing_package = "../app/target/lambda/crustchan-approve-post/bootstrap.zip"
   tags = {
     environment = var.environment
   }
