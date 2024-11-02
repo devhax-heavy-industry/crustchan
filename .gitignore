@@ -13,3 +13,4 @@ __azurite_db*__.json
 target/
 .aws
 .DS_Store
+.terraform

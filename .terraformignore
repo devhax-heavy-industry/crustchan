@@ -1,0 +1,17 @@
+app/src
+app/target/build
+app/target/release
+app/target/debug
+app/target/deps
+app/static
+app/Cargo.\*
+app/Dockerfile
+app/Readme.md
+app/target/lambda/crustchan-api
+**/.git/**
+**/.terraform/\*
+!**/.terraform/modules/\*\*
+.aws
+_.tfstate
+_.tfstate.\*
+.env

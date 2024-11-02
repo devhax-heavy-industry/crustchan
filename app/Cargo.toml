@@ -23,27 +23,30 @@ rusoto_core = { version = "0.48", default-features = false, features = ["rustls"
 rusoto_dynamodb = { version = "0.48", default-features = false, features = ["rustls"] }
 serde_json = "1.0.132"
 unescape = "0.1.0"
-argonautica = "0.2.0"
-rust-crypto = "0.2.36"
+argonautica = {version = "0.2.0", features = ["serde"], optional = true}
+rust-crypto = {version = "0.2.36", optional = true}
 rand = "0.7.3"
-ed25519-dalek = {version = "1.0.0" , features=["serde"]}
+ed25519-dalek = {version = "1.0.0" , features=["serde"], optional = true}
 lazy_static = "1.5.0"
 base64 = "0.22.1"
 futures = "0.3.31"
 pathbuf = "1.0.0"
-multer = {version= "3.1.0", features = ["all"] }
+multer = {version= "3.1.0", features = ["all"] , optional = true}
 rusoto_s3 = {version = "0.48.0", default-features = false, features = ["rustls"]}
 lambda_runtime = { version = "0.13.0", optional = true , features = ["anyhow"]}
-aws_lambda_events = "0.15.1"
+aws_lambda_events = {version = "0.15.1"}
 
 [features]
-default = ["lambda"]
+default = ["api-server"]
 lambda = ["lambda_runtime"]
+api-server = ["dep:argonautica",  "rust-crypto", "ed25519-dalek", "multer"]
+
 
 [[bin]]
 name = "crustchan-api"
 path = "src/main.rs"
 test = false
+required-features = ["api-server"]
 
 [[bin]]
 name = "crustchan-approve-post"
@@ -56,4 +59,7 @@ name = "crustchan"
 path = "src/lib/lib.rs"
 test = false
 
+
+[package.metadata.scripts]
+build-lambda = "cargo lambda build --output-format zip -F lambda --arm64 --no-default-features"
 

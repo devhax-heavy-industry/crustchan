@@ -84,6 +84,7 @@ resource "aws_dynamodb_table" "crustchan_posts" {
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "id"
   range_key = "created_at"
+  stream_enabled	= true
   attribute {
     name = "id"
     type = "S"
@@ -105,10 +106,7 @@ resource "aws_dynamodb_table" "crustchan_posts" {
     name = "ip"
     type = "S"
   }
-  attribute {
-    name = "session"
-    type = "S"
-  }
+
   
     global_secondary_index {
     name               = "board-index"
@@ -218,35 +216,43 @@ resource "aws_iam_role" "iam_for_lambda" {
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
-resource "aws_lambda_permission" "allow_post_bucket" {
+data "archive_file" "crustchan-bin" {
+  type = "zip"
 
+  source_dir  = "../app/target/lambda/crustchan-approve-post/"
+  output_path = "../app/target/lambda/crustchan-approve-post/bootstrap.zip"
 }
+resource "aws_s3_bucket" "lambda_bucket" {
+  bucket = "crustchan-lambda"
+}
+resource "aws_s3_object" "crustchan-lambda" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+
+  key    = "bootstrap.zip"
+  source = data.archive_file.lambda_hello_world.output_path
+
+  etag = filemd5(data.archive_file.lambda_hello_world.output_path)
+}
+
+
 module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "7.14.0"
 
-  function_name = "approve-post"
-  handler       = "approvepost"
+  function_name = "crustchan-approve-post"
+  handler       = "approve_post_handler"
   runtime       = "provided.al2"
   architectures = ["arm64"]
   create_package         = false
-  local_existing_package = "../target/lambda/rust-aws-lambda/bootstrap.zip"
+  # local_existing_package = "../app/target/lambda/crustchan-approve-post/bootstrap.zip"
   tags = {
     environment = var.environment
   }
-}
-resource "aws_lambda_function" "approve-post" {
-
 
 }
 
-resource "aws_s3_bucket_notification" "bucket_notification" {
-  bucket = aws_s3_bucket.bucket.id
-
-  lambda_function {
-    lambda_function_arn = aws_lambda_function.func1.arn
-    events              = ["s3:ObjectCreated:*"]
-    filter_prefix       = "AWSLogs/"
-    filter_suffix       = ".log"
-  }
+resource "aws_lambda_event_source_mapping" "dynamodb-stream-to-lambda" {
+  event_source_arn  = aws_dynamodb_table.crustchan_boards.stream_arn
+  function_name     = module.lambda_function.lambda_function_arn
+  starting_position = "LATEST"
 }

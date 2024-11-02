@@ -1,4 +1,5 @@
 use anyhow::{Context, Error as AnyErr};
+use argonautica::Hasher;
 use bytes::Bytes;
 use chrono::{Duration, Local};
 use crustchan::rejections::Unauthorized;
@@ -15,6 +16,17 @@ use base64::prelude::*;
 const KEYS_FOLDER: &'static str = "./.cache/keys"; // WARNING pass via configMap, use fs::Path
 lazy_static::lazy_static! {
     pub static ref KEYPAIR_AUTHN:KeyPair = KeyPair::from_file_or_new("keypair_tkn_sign").expect("failed generating keypair for token signing");
+}
+
+impl<'a> Admin {
+pub async fn hash_password(password: String) -> Result<String, HashError> {
+    let secret = Admin::get_secret_key().await;
+    Ok(Hasher::default()
+        .with_password(password)
+        .with_secret_key(secret.as_str())
+        .hash()
+        .unwrap())
+}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

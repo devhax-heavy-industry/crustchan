@@ -1,0 +1,101 @@
+{
+  "Records": [
+    {
+      "eventID": "f07f8ca4b0b26cb9c4e5e77e69f274ee",
+      "eventName": "INSERT",
+      "eventVersion": "1.1",
+      "eventSource": "aws:dynamodb",
+      "awsRegion": "us-east-1",
+      "userIdentity": {
+        "type": "Service",
+        "principalId": "dynamodb.amazonaws.com"
+      },
+      "dynamodb": {
+        "ApproximateCreationDateTime": 1480642020,
+        "Keys": {
+          "id": {
+            "S": "123"
+          },
+          "board_id": {
+            "S": "prog"
+          },
+          "created_at": {
+            "S": "2016-12-01T00:00:00.000"
+          },
+          "op": {
+            "S": "NULL"
+          },
+          "ip": {
+            "S": "127.0.0.1"
+          }
+        },
+        "NewImage": {
+          "id": {
+            "S": "data"
+          },
+          "board_id": {
+            "S": "prog"
+          },
+          "created_at": {
+            "S": "2016-12-01T00:00:00.000"
+          },
+          "subject": {
+            "S": "Subject"
+          },
+          "text": {
+            "S": "Big ol text"
+          },
+          "poster": {
+            "S": "poster name"
+          },
+          "ip": {
+            "S": "127.0.0.1"
+          },
+          "op": {
+            "S": "NULL"
+          },
+          "file": {
+            "S": "asdfsdfsfd"
+          },
+          "deleted": {
+            "BOOL": true
+          },
+
+          "soft_banned": {
+            "BOOL": true
+          },
+
+          "locked": {
+            "BOOL": true
+          },
+
+          "approved": {
+            "BOOL": true
+          },
+          "public_banned": {
+            "NULL": true
+          },
+          "sticky": {
+            "BOOL": true
+          },
+          "file_name": {
+            "S": "asdasd"
+          },
+          "file_size": {
+            "N": "123"
+          },
+          "file_dimensions": {
+            "S": "2x2"
+          },
+          "file_original_name": {
+            "S": "asdasd"
+          }
+        },
+        "SequenceNumber": "1405400000000002063282832",
+        "SizeBytes": 54,
+        "StreamViewType": "NEW_AND_OLD_IMAGES"
+      },
+      "eventSourceARN": "arn:aws:dynamodb:us-east-1:123456789012:table/Example-Table/stream/2016-12-01T00:00:00.000"
+    }
+  ]
+}
