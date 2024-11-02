@@ -210,7 +210,7 @@ module "lambda_function" {
 }
 
 resource "aws_lambda_event_source_mapping" "dynamodb-stream-to-lambda" {
-  event_source_arn  = aws_dynamodb_table.crustchan_boards.stream_arn
+  event_source_arn  = aws_dynamodb_table.crustchan_posts.stream_arn
   function_name     = module.lambda_function.lambda_function_arn
   starting_position = "LATEST"
 }
