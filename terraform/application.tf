@@ -85,6 +85,7 @@ resource "aws_dynamodb_table" "crustchan_posts" {
   hash_key       = "id"
   range_key = "created_at"
   stream_enabled	= true
+  stream_view_type = "NEW_IMAGE"
   attribute {
     name = "id"
     type = "S"
