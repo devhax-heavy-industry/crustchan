@@ -126,12 +126,6 @@ resource "aws_dynamodb_table" "crustchan_posts" {
     range_key = "created_at"
     projection_type    = "ALL"
   }
-  global_secondary_index {
-    name               = "session-index"
-    hash_key           = "session"
-    range_key = "created_at"
-    projection_type    = "ALL"
-  }
 
   tags = {
     environment = var.environment
@@ -198,55 +192,6 @@ resource "aws_dynamodb_table" "crustchan_admin" {
     environment = var.environment
   }
 }
-data "aws_iam_policy_document" "assume_role" {
-  statement {
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["lambda.amazonaws.com"]
-    }
-
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-resource "aws_iam_role" "iam_for_lambda" {
-  name               = "iam_for_lambda"
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
-}
-
-data "archive_file" "crustchan-bin" {
-  type = "zip"
-
-  source_dir  = "../app/target/lambda/crustchan-approve-post/"
-  output_path = "../app/target/lambda/crustchan-approve-post/bootstrap.zip"
-}
-resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = "crustchan-lambda"
-}
-resource "aws_s3_object" "crustchan-lambda" {
-  bucket = aws_s3_bucket.lambda_bucket.id
-
-  key    = "bootstrap.zip"
-  source = data.archive_file.crustchan-bin.output_path
-
-  etag = filemd5(data.archive_file.crustchan-bin.output_path)
-}
-resource "aws_s3_bucket_ownership_controls" "lambda_bucket" {
-  bucket = aws_s3_bucket.lambda_bucket.id
-  rule {
-    object_ownership = "BucketOwnerPreferred"
-  }
-}
-
-resource "aws_s3_bucket_acl" "lambda_bucket" {
-  depends_on = [aws_s3_bucket_ownership_controls.lambda_bucket]
-
-  bucket = aws_s3_bucket.lambda_bucket.id
-  acl    = "private"
-}
-
 module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "7.14.0"
