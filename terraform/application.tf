@@ -229,11 +229,23 @@ resource "aws_s3_object" "crustchan-lambda" {
   bucket = aws_s3_bucket.lambda_bucket.id
 
   key    = "bootstrap.zip"
-  source = data.archive_file.lambda_hello_world.output_path
+  source = data.archive_file.crustchan-bin.output_path
 
   etag = filemd5(data.archive_file.lambda_hello_world.output_path)
 }
+resource "aws_s3_bucket_ownership_controls" "lambda_bucket" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
 
+resource "aws_s3_bucket_acl" "lambda_bucket" {
+  depends_on = [aws_s3_bucket_ownership_controls.lambda_bucket]
+
+  bucket = aws_s3_bucket.lambda_bucket.id
+  acl    = "private"
+}
 
 module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
