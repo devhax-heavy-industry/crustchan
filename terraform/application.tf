@@ -206,7 +206,7 @@ module "lambda_function" {
   tags = {
     environment = var.environment
   }
-
+  ignore_source_code_hash = true
 }
 
 resource "aws_lambda_event_source_mapping" "dynamodb-stream-to-lambda" {
