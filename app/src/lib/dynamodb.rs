@@ -1,11 +1,20 @@
-use crate::models::{Admin, Board, Post, dynamodb::PostEvent};
+use crate::models::{Admin, Board, Post};
 use crate::rejections::InvalidUser;
 use crate::AWS_REGION;
 use rusoto_dynamodb::{
-    AttributeValue, DynamoDb, DynamoDbClient, PutItemInput, PutItemOutput, QueryInput, ScanInput,
+    AttributeValue, 
+    DynamoDb, 
+    DynamoDbClient, 
+    PutItemInput, 
+    UpdateItemInput, 
+    UpdateItemOutput,
+    PutItemOutput, 
+    QueryInput, 
+    ScanInput,
 };
 use serde::Deserialize;
-use serde_dynamo::{from_item, to_item};
+use serde_dynamo::{from_item, to_item, Item};
+use std::collections::HashMap;
 use std::error::Error;
 use tokio::sync::OnceCell;
 use tracing::{info, warn};
@@ -220,5 +229,31 @@ pub async fn create_admin(admin: Admin) -> Result<PutItemOutput, Box<dyn Error>>
 
     let output = client.put_item(input).await?;
     info!("Created admin item: {:?}", output.clone());
+    Ok(output)
+}
+
+pub async fn approve_post(post:Post) -> Result<UpdateItemOutput, Box<dyn Error>> {
+    let client: &DynamoDbClient = get_client().await;
+    let id = AttributeValue {
+        s: Some(post.id),
+        ..Default::default()
+    };
+    let mut key: HashMap<String,AttributeValue> = HashMap::new();
+    key.insert("id".to_string(), id);
+    let mut expression_attribute_values = HashMap::new();
+    expression_attribute_values.insert(":approved".to_string(), AttributeValue {
+        bool: Some(true),
+        ..Default::default()
+    });
+    let input = UpdateItemInput {
+        table_name: POSTS_TABLE_NAME.to_string(),
+        key: key,
+        update_expression: Some("SET approved = :approved".to_string()),
+        expression_attribute_values:Some(expression_attribute_values),
+        ..Default::default()
+    };
+
+    let output = client.update_item(input).await?;
+
     Ok(output)
 }

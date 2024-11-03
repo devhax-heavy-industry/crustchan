@@ -203,6 +203,9 @@ module "lambda_function" {
   architectures = ["arm64"]
   create_package         = false
   local_existing_package = "../app/target/lambda/crustchan-approve-post/bootstrap.zip"
+  environment_variables = {
+    RUST_LOG = "crustchan-approve-post::debug"
+  }
   tags = {
     environment = var.environment
   }
