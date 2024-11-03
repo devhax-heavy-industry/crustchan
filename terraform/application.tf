@@ -199,7 +199,7 @@ module "lambda_function" {
 
   function_name = "crustchan-approve-post"
   handler       = "approve_post_handler"
-  runtime       = "provided.al2"
+  runtime       = "provided.al2023"
   architectures = ["arm64"]
   create_package         = false
   local_existing_package = "../app/target/lambda/crustchan-approve-post/bootstrap.zip"

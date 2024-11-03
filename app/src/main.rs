@@ -8,6 +8,7 @@ use std::env;
 use std::net::Ipv4Addr;
 // use boards::list_boards;
 use admin::admin_routes;
+use auth::hash_password;
 use board::board_routes;
 use crustchan::dynamodb;
 use crustchan::models::Admin;
@@ -30,7 +31,7 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
 
             let admin_user = Admin {
                 username: "admin".to_string(),
-                password: Admin::hash_password("changeme".to_string()).await.unwrap(),
+                password: hash_password("changeme".to_string()).await.unwrap(),
                 ..Default::default()
             };
             let _created_admin_output = dynamodb::create_admin(admin_user.clone()).await;

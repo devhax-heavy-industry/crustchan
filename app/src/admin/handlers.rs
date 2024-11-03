@@ -1,6 +1,6 @@
-use crate::auth::AuthnToken;
+use crate::auth::{AuthnToken,login};
 use crustchan::dynamodb::create_board;
-use crustchan::models::{Admin, Board};
+use crustchan::models::Board;
 use crustchan::rejections::InvalidUser;
 use crustchan::response::{GenericResponse, WebResult};
 use std::collections::HashMap;
@@ -46,7 +46,7 @@ pub async fn login_handler(
     info!("login_handler:");
     let username = json_body.get("username").unwrap();
     let password = json_body.get("password").unwrap();
-    let result = Admin::login(username.clone(), password.clone())
+    let result = login(username.clone(), password.clone())
         .await
         .map_err(|e| {
             error!("login error: {:?}", e);

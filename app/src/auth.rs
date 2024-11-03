@@ -2,7 +2,8 @@ use anyhow::{Context, Error as AnyErr};
 use argonautica::Hasher;
 use bytes::Bytes;
 use chrono::{Duration, Local};
-use crustchan::rejections::Unauthorized;
+use crustchan::rejections::{Unauthorized, HashError, InvalidLogin};
+use crustchan::models::admin::Admin;
 use crypto::blake2b::Blake2b; // WARNING: use Blake2b-512 or Keccak-512
 use crypto::digest::Digest;
 use ed25519_dalek::{self as ed, Keypair, PublicKey, Signature, SignatureError, Signer};
@@ -11,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use warp::reject::Rejection;
 use warp::Reply;
+use tokio::sync::OnceCell;
 use base64::prelude::*;
 
 const KEYS_FOLDER: &'static str = "./.cache/keys"; // WARNING pass via configMap, use fs::Path
@@ -18,15 +20,37 @@ lazy_static::lazy_static! {
     pub static ref KEYPAIR_AUTHN:KeyPair = KeyPair::from_file_or_new("keypair_tkn_sign").expect("failed generating keypair for token signing");
 }
 
-impl<'a> Admin {
 pub async fn hash_password(password: String) -> Result<String, HashError> {
-    let secret = Admin::get_secret_key().await;
+    let secret = get_secret_key().await;
     Ok(Hasher::default()
         .with_password(password)
         .with_secret_key(secret.as_str())
         .hash()
         .unwrap())
 }
+pub async fn get_secret_key() -> &'static String {
+    static SECRET_KEY: OnceCell<String> = OnceCell::const_new();
+    SECRET_KEY
+        .get_or_init(|| async {
+            let secret_key = std::env::var("SECRET_KEY").unwrap_or_else(|_| {
+                "f7sigsef esf fh2dsjrd k56fg fshdj4g,fhjd6we easfra sfda2kg".repeat(8)
+            });
+            secret_key
+        })
+        .await
+}
+
+
+pub async fn login(username: String, password: String) -> Result<Admin, Rejection> {
+    let admin: Admin = crate::dynamodb::get_admin_user(username.clone())
+        .await
+        .unwrap();
+    let hashed_password = hash_password(password).await.unwrap();
+    if admin.username == username && admin.password == hashed_password {
+        return Ok(admin);
+    } else {
+        return Err(warp::reject::custom(InvalidLogin));
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
