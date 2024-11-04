@@ -38,6 +38,12 @@ impl reject::Reject for ConversionError {}
 pub struct HashError;
 impl reject::Reject for HashError {}
 
+#[derive(Debug)]
+pub struct InvalidPost;
+impl reject::Reject for InvalidPost {}
+
+
+
 pub enum Rejections {
     InvalidParameter(InvalidParameter),
     InvalidLogin(InvalidLogin),
@@ -47,7 +53,7 @@ pub enum Rejections {
     Unauthorized(Unauthorized),
     HashError(HashError),
     ConversionError(ConversionError),
-    
+    InvalidPost(InvalidPost)
 }
 
 

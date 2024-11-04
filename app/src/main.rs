@@ -7,7 +7,7 @@ pub mod post;
 use std::env;
 use std::net::Ipv4Addr;
 // use boards::list_boards;
-use admin::{admin_routes_get, admin_routes_post};
+use admin::{admin_routes_get, admin_routes_post, routes::admin_approve_post_route};
 use auth::hash_password;
 use board::board_routes_get;
 use crustchan::dynamodb;
@@ -53,7 +53,7 @@ async fn main() {
         .or(board_routes_get())
         .or(post_routes_get()));
     let post_routes =warp::post()
-        .and(admin_routes_post().or(post_routes_post()));
+        .and(admin_approve_post_route().or(admin_routes_post()).or(post_routes_post()));
     let log_filter = std::env::var("RUST_LOG")
         .unwrap_or_else(|_| "tracing=info,warp=debug,crustchan=trace,crustchan-api=trace".to_owned());
     tracing_subscriber::fmt()

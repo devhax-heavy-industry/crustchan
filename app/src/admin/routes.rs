@@ -47,7 +47,7 @@ pub fn admin_login_route() -> BoxedFilter<(impl Reply,)> {
 
 pub fn admin_approve_post_route() -> BoxedFilter<(impl Reply,)> {
     // warp::post()
-    warp::path!("api" / "admin" / "post" / "approve")
+    warp::path!("api" / "admin" / "posts" / "approve")
         .and(crate::middleware::cookie_authn())
         .and(warp::body::content_length_limit(CONTENT_LIMIT))
         .and(warp::body::json())

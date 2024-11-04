@@ -83,7 +83,7 @@ resource "aws_dynamodb_table" "crustchan_posts" {
   name           = "crustchan-posts"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "id"
-  range_key = "created_at"
+  # range_key = "created_at"
   stream_enabled	= true
   stream_view_type = "NEW_IMAGE"
   attribute {

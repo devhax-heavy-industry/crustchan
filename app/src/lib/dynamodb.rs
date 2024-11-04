@@ -235,19 +235,19 @@ pub async fn create_admin(admin: Admin) -> Result<PutItemOutput, Box<dyn Error>>
     Ok(output)
 }
 
-pub async fn approve_post(post_id:String) -> Result<UpdateItemOutput, Box<dyn Error>> {
+pub async fn approve_post(post_id:String, created_at:String ) -> Result<UpdateItemOutput, Box<dyn Error>> {
     let client: &DynamoDbClient = get_client().await;
     let id = AttributeValue {
         s: Some(post_id),
         ..Default::default()
     };
-    // let created_at = AttributeValue {
-    //     s: Some(post.created_at.to_rfc3339().to_string()),
-    //     ..Default::default()
-    // };
+    let created_at = AttributeValue {
+        s: Some(created_at),
+        ..Default::default()
+    };
     let mut key: HashMap<String,AttributeValue> = HashMap::new();
     key.insert("id".to_string(), id);
-    // key.insert("created_at".to_string(), created_at);
+    key.insert("created_at".to_string(), created_at);
     let mut expression_attribute_values = HashMap::new();
     expression_attribute_values.insert(":approved".to_string(), AttributeValue {
         bool: Some(true),

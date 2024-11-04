@@ -19,7 +19,6 @@ async fn cookie_authn_step2(token_str: String) -> Result<AuthnToken, Rejection> 
             return Err(warp::reject::custom(Unauthorized));
         }
     };
-    dbg!(&verified_token);
     match verified_token.verify() {
         Ok(_) => Ok(verified_token),
         Err(_) => Err(warp::reject::custom(Unauthorized)),

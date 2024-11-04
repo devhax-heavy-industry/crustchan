@@ -1,7 +1,7 @@
 use crate::auth::{AuthnToken,login};
 use crustchan::dynamodb::{approve_post, create_board};
 use crustchan::models::Board;
-use crustchan::rejections::InvalidUser;
+use crustchan::rejections::{InvalidUser, InvalidPost};
 use crustchan::response::{GenericResponse, WebResult};
 use std::collections::HashMap;
 use tracing::{error, info};
@@ -86,16 +86,25 @@ pub async fn login_handler(
 
 
 pub async fn approve_post_handler(_token: impl Reply, json_body: HashMap<String, String>) -> WebResult {
-    dbg!("approve_post_handler:");
-    let post_id = json_body.get("post_id").unwrap();
-    
-    let output = approve_post(post_id.clone()).await.unwrap();
+    info!("approve_post_handler:");
+    let post_id = json_body.get("id").unwrap();
 
-    dbg!(&output.clone());
+    let created_at = json_body.get("created_at").unwrap();
+    let output = approve_post(post_id.clone(), created_at.clone()).await;
+    match output {
+        Ok(_) => {
+            const MESSAGE: &str = "lel approve em all";
 
-    const MESSAGE: &str = "lel approve em all";
+            let response = GenericResponse::new(warp::http::StatusCode::OK, MESSAGE.to_string());
+            info!("response: {:?}", response);
+            Ok(response)
+        }
+        Err(e) => {
+            error!("approve_post_handler error: {:?}", e);
+            let rejection = warp::reject::custom(InvalidPost);
+            Err(rejection)
+        }
+    }
 
-    let response = GenericResponse::new(warp::http::StatusCode::OK, MESSAGE.to_string());
-    info!("response: {:?}", response);
-    Ok(response)
+
 }
