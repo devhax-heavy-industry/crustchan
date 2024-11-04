@@ -1,5 +1,5 @@
 use crate::auth::{AuthnToken,login};
-use crustchan::dynamodb::create_board;
+use crustchan::dynamodb::{approve_post, create_board};
 use crustchan::models::Board;
 use crustchan::rejections::InvalidUser;
 use crustchan::response::{GenericResponse, WebResult};
@@ -51,14 +51,51 @@ pub async fn login_handler(
         .map_err(|e| {
             error!("login error: {:?}", e);
             let _ = warp::reject::custom(InvalidUser);
-        })
-        .unwrap();
-    let user_id = result.id.parse::<i64>().unwrap();
-    let token = AuthnToken::from_user_id(user_id).unwrap();
-    let msg = format!("Welcome back, {}", result.username);
-    Ok(warp::reply::with_header(
-        GenericResponse::new(warp::http::StatusCode::OK, msg),
-        "Set-Cookie",
-        token.header_val(),
-    ))
+        });
+    match result {
+        Ok(_) => info!("login success"),
+        Err(e) => {
+            error!("login failed {:?}", e);
+            let rejection = warp::reject::custom(InvalidUser);
+            return Err(rejection);
+        }
+    };
+    let actual_user = result.unwrap();
+    let user_id = actual_user.id;
+    let token = AuthnToken::from_user_id(user_id);
+
+    match token {
+        Ok(token_result) => {
+            let msg = format!("Welcome back, {}", actual_user.username);
+            Ok(warp::reply::with_header(
+                GenericResponse::new(warp::http::StatusCode::OK, msg),
+                "Set-Cookie",
+                token_result.header_val(),
+            ))
+        }
+        Err(_) => {
+            error!("Token verification failed");
+            let rejection = warp::reject::custom(InvalidUser);
+            Err(rejection)
+        }
+        
+    }
+
+}
+
+
+
+pub async fn approve_post_handler(_token: impl Reply, json_body: HashMap<String, String>) -> WebResult {
+    dbg!("approve_post_handler:");
+    let post_id = json_body.get("post_id").unwrap();
+    
+    let output = approve_post(post_id.clone()).await.unwrap();
+
+    dbg!(&output.clone());
+
+    const MESSAGE: &str = "lel approve em all";
+
+    let response = GenericResponse::new(warp::http::StatusCode::OK, MESSAGE.to_string());
+    info!("response: {:?}", response);
+    Ok(response)
 }

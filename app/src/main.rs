@@ -7,13 +7,13 @@ pub mod post;
 use std::env;
 use std::net::Ipv4Addr;
 // use boards::list_boards;
-use admin::admin_routes;
+use admin::{admin_routes_get, admin_routes_post};
 use auth::hash_password;
-use board::board_routes;
+use board::board_routes_get;
 use crustchan::dynamodb;
 use crustchan::models::Admin;
 use crustchan::rejections::handle_rejection;
-use post::post_routes;
+use post::{post_routes_get, post_routes_post};
 use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{Filter, Rejection};
@@ -28,10 +28,11 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
         }
         Err(e) => {
             info!("No admin user exists, creating one now...{e:?}");
-
+            let password =hash_password("changeme".to_string()).unwrap();
+            dbg!(&password);
             let admin_user = Admin {
                 username: "admin".to_string(),
-                password: hash_password("changeme".to_string()).await.unwrap(),
+                password,
                 ..Default::default()
             };
             let _created_admin_output = dynamodb::create_admin(admin_user.clone()).await;
@@ -45,8 +46,16 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
 #[tokio::main]
 async fn main() {
     let static_route = warp::fs::dir("static");
+    let get_routes =
+        warp::get()
+        .and(static_route
+        .or(admin_routes_get())
+        .or(board_routes_get())
+        .or(post_routes_get()));
+    let post_routes =warp::post()
+        .and(admin_routes_post().or(post_routes_post()));
     let log_filter = std::env::var("RUST_LOG")
-        .unwrap_or_else(|_| "tracing=info,warp=debug,crustchan=debug".to_owned());
+        .unwrap_or_else(|_| "tracing=info,warp=debug,crustchan=trace,crustchan-api=trace".to_owned());
     tracing_subscriber::fmt()
         // .text()
         .with_thread_names(false)
@@ -55,7 +64,7 @@ async fn main() {
         .with_env_filter(log_filter)
         // Record an event when each span closes. This can be used to time our
         // routes' durations!
-        .with_span_events(FmtSpan::CLOSE)
+        .with_span_events(FmtSpan::NEW)
         .init();
     let port_key = "FUNCTIONS_CUSTOMHANDLER_PORT";
     let port: u16 = match env::var(port_key) {
@@ -64,12 +73,11 @@ async fn main() {
     };
 
     // load up our project's routes
-    let routes = static_route
-        .or(post_routes().boxed())
-        .or(board_routes().boxed())
-        .or(admin_routes().boxed())
-        .with(warp::compression::gzip()) //; //.or(list_boards);
-        .with(warp::log("crustchan"))
+    let routes =
+        post_routes 
+        .or(get_routes)
+        .with(warp::compression::gzip())
+        .with(warp::log("crustchan-api"))
         .with(warp::trace::request())
         .recover(handle_rejection);
 

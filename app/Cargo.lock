@@ -579,6 +579,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "base16ct"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c7f02d4ea65f2c1853089ffd8d2787bdbc63de2f0d29dedbcf8ccdfa0ccd4cf"
+
+[[package]]
 name = "base64"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -614,6 +620,12 @@ dependencies = [
  "outref",
  "vsimd",
 ]
+
+[[package]]
+name = "base64ct"
+version = "1.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 
 [[package]]
 name = "bindgen"
@@ -931,7 +943,9 @@ dependencies = [
  "aws-config",
  "aws-sdk-dynamodb",
  "aws_lambda_events",
+ "base16ct",
  "base64 0.22.1",
+ "base64ct",
  "bytes 0.4.12",
  "chrono",
  "ed25519-dalek",
@@ -957,6 +971,7 @@ dependencies = [
  "unescape",
  "uuid",
  "warp",
+ "whirlpool",
 ]
 
 [[package]]
@@ -4013,6 +4028,15 @@ checksum = "b57acb10231b9493c8472b20cb57317d0679a49e0bdbee44b3b803a6473af164"
 dependencies = [
  "failure",
  "libc",
+]
+
+[[package]]
+name = "whirlpool"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1ae50671d985c15b3214c7d969b8b520759fb3c8682444bec15ef775335a05c"
+dependencies = [
+ "digest 0.10.7",
 ]
 
 [[package]]

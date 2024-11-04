@@ -1,11 +1,12 @@
 use anyhow::{Context, Error as AnyErr};
-use argonautica::Hasher;
+use whirlpool::{Whirlpool, Digest as WPDigest};
 use bytes::Bytes;
 use chrono::{Duration, Local};
 use crustchan::rejections::{Unauthorized, HashError, InvalidLogin};
 use crustchan::models::admin::Admin;
 use crypto::blake2b::Blake2b; // WARNING: use Blake2b-512 or Keccak-512
 use crypto::digest::Digest;
+use base64ct::{Base64, Encoding};
 use ed25519_dalek::{self as ed, Keypair, PublicKey, Signature, SignatureError, Signer};
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
@@ -20,13 +21,12 @@ lazy_static::lazy_static! {
     pub static ref KEYPAIR_AUTHN:KeyPair = KeyPair::from_file_or_new("keypair_tkn_sign").expect("failed generating keypair for token signing");
 }
 
-pub async fn hash_password(password: String) -> Result<String, HashError> {
-    let secret = get_secret_key().await;
-    Ok(Hasher::default()
-        .with_password(password)
-        .with_secret_key(secret.as_str())
-        .hash()
-        .unwrap())
+pub fn hash_password(password: String) -> Result<String, HashError> {
+    let mut hasher = Whirlpool::new();
+    hasher.update(password);
+    let hash = hasher.finalize();
+    let hash_result = Base64::encode_string(&hash);
+    Ok(hash_result)
 }
 pub async fn get_secret_key() -> &'static String {
     static SECRET_KEY: OnceCell<String> = OnceCell::const_new();
@@ -45,32 +45,38 @@ pub async fn login(username: String, password: String) -> Result<Admin, Rejectio
     let admin: Admin = crate::dynamodb::get_admin_user(username.clone())
         .await
         .unwrap();
-    let hashed_password = hash_password(password).await.unwrap();
-    if admin.username == username && admin.password == hashed_password {
-        return Ok(admin);
-    } else {
-        return Err(warp::reject::custom(InvalidLogin));
-    }
+    verify(admin.password.clone(), password.clone()).await?;
+    return Ok(admin);
+
 }
+
+pub async fn verify(hash: String, password: String) -> Result<bool, Rejection> {
+    let hashed_password: String = hash_password(password).unwrap();
+    if hash == hashed_password {
+        Ok(true)
+    } else {
+        Err(warp::reject::custom(InvalidLogin))
+    }
+  }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Claims {
     pub iat: i64,
     pub exp: i64,
-    pub user_id: i64,
+    pub user_id: String,
 }
 impl Claims {
-    fn from_user_id(local_user_id: i64) -> Self {
+    fn from_user_id(local_user_id: String) -> Self {
         Self {
             user_id: local_user_id,
             iat: Local::now().timestamp(),
             exp: (Local::now() + Duration::hours(24)).timestamp(),
         }
     }
-    fn hash(&self) -> [u8; 32] {
-        let mut ret = [0u8; 32];
-        let mut hasher = Blake2b::new(32);
-        hasher.input(&self.user_id.to_be_bytes());
+    fn hash(&self) -> [u8; 52] {
+        let mut ret = [0u8; 52];
+        let mut hasher = Blake2b::new(52);
+        hasher.input(&self.user_id.as_bytes());
         hasher.input(&self.iat.to_be_bytes());
         hasher.input(&self.exp.to_be_bytes());
         hasher.result(&mut ret);
@@ -87,7 +93,7 @@ pub struct AuthnToken {
     pub sig: ed::Signature,
 }
 impl AuthnToken {
-    pub fn from_user_id(user_id: i64) -> Result<AuthnToken, Rejection> {
+    pub fn from_user_id(user_id: String) -> Result<AuthnToken, Rejection> {
         Claims::from_user_id(user_id).sign()
     }
     pub fn verify(&self) -> Result<(), Rejection> {
@@ -103,21 +109,22 @@ impl AuthnToken {
         let mut b = Bytes::new();
         b.extend_from_slice(&self.claims.iat.to_be_bytes());
         b.extend_from_slice(&self.claims.exp.to_be_bytes());
-        b.extend_from_slice(&self.claims.user_id.to_be_bytes());
+        b.extend_from_slice(&self.claims.user_id.as_bytes());
         b.extend_from_slice(&self.sig.to_bytes());
         // b.len is 88
         b.to_vec()
     }
     pub fn from_bytes<'a>(bytes: &'a [u8]) -> Result<Self, AnyErr> {
         let mut buf = [0u8; 8];
+        let mut str_buf = [0u8; 36];
         buf.copy_from_slice(&bytes[0..8]);
         let iat: i64 = i64::from_be_bytes(buf);
         buf.copy_from_slice(&bytes[8..16]);
         let exp: i64 = i64::from_be_bytes(buf);
-        buf.copy_from_slice(&bytes[16..24]);
-        let user_id: i64 = i64::from_be_bytes(buf);
+        str_buf.copy_from_slice(&bytes[16..52]);
+        let user_id: String = String::from_utf8_lossy(&str_buf).to_string();
 
-        let sig: Signature = Signature::from_bytes(&bytes[24..])?;
+        let sig: Signature = Signature::from_bytes(&bytes[52..])?;
         Ok(AuthnToken {
             claims: Claims { iat, exp, user_id },
             sig,

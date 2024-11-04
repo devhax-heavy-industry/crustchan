@@ -34,6 +34,10 @@ impl reject::Reject for Unauthorized {}
 pub struct ConversionError;
 impl reject::Reject for ConversionError {}
 
+#[derive(Debug)]
+pub struct HashError;
+impl reject::Reject for HashError {}
+
 pub enum Rejections {
     InvalidParameter(InvalidParameter),
     InvalidLogin(InvalidLogin),
@@ -43,32 +47,11 @@ pub enum Rejections {
     Unauthorized(Unauthorized),
     HashError(HashError),
     ConversionError(ConversionError),
+    
 }
-impl reject::Reject for HashError {}
 
-#[derive(Debug)]
-pub struct HashError;
 
-// impl From<argonautica::Error> for Rejections {
-//     fn from(_e: argonautica::Error) -> Self {
-//         Rejections(HashError)
-//     }
-// }
-// impl From<ApiError<T>> for Rejection {
-//     fn from(e: ApiError<T>) -> Self {
-//         warp::reject::custom(e.message)
-//     }
-// }
-// impl From<argonautica::Error> for HashError {
-//     fn from(e: argonautica::Error) -> Self {
-//         match e.kind() {
-//             _ => {
-//                 dbg!(e.kind());
-//                 Rejections::Unauthorized
-//             }
-//         }
-//     }
-// }
+
 
 pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
     let code;
@@ -80,6 +63,12 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
         message = "NOT_FOUND";
     } else if let Some(_e) = err.find::<InvalidParameter>() {
         message = "BAD_REQUEST";
+        code = StatusCode::BAD_REQUEST;
+    } else if let Some(_e) = err.find::<InvalidLogin>() {
+        message = "Invalid Login";
+        code = StatusCode::BAD_REQUEST;
+    } else if let Some(_e) = err.find::<InvalidUser>() {
+        message = "Invalid User";
         code = StatusCode::BAD_REQUEST;
     } else if let Some(_e) = err.find::<UnsupportedMediaType>() {
         message = "UNSUPPORTED_MEDIA_TYPE";

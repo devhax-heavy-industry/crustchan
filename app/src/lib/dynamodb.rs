@@ -103,7 +103,7 @@ pub async fn create_board(board: Board) -> Result<PutItemOutput, Box<dyn Error>>
     info!("Created board item: {:?}", output.clone());
     Ok(output)
 }
-pub async fn get_post_by_id(_board_id: String, post_id: String) -> Result<Post, Box<dyn Error>> {
+pub async fn get_post_by_id(post_id: String) -> Result<Post, Box<dyn Error>> {
     let client: &DynamoDbClient = get_client().await;
     let input = QueryInput {
         table_name: POSTS_TABLE_NAME.to_string(),
@@ -162,10 +162,12 @@ pub async fn list_boards() -> Result<Vec<Board>, Box<dyn Error>> {
 }
 
 pub async fn get_admin_user(username: String) -> Result<Admin, Rejection> {
+    info!("get_admin_user - Username: {:?}", username);
     let client: &DynamoDbClient = get_client().await;
     let input = QueryInput {
         table_name: ADMIN_TABLE_NAME.to_string(),
-        key_condition_expression: Some("name = :inputname".to_string()),
+        key_condition_expression: Some("username = :inputname".to_string()),
+        index_name: Some("username-index".to_string()),
         expression_attribute_values: Some(
             [(
                 ":inputname".to_string(),
@@ -181,6 +183,7 @@ pub async fn get_admin_user(username: String) -> Result<Admin, Rejection> {
         ..Default::default()
     };
     let output = client.query(input).await;
+   
     let items_output = match output {
         Err(e) => {
             warn!("get_admin_user - Error: {:?}", e);
@@ -188,7 +191,7 @@ pub async fn get_admin_user(username: String) -> Result<Admin, Rejection> {
         }
         _ => output.unwrap(),
     };
-
+    info!("username yielded an admin user");
     let user: Admin = from_item(items_output.items.unwrap().pop().unwrap()).unwrap();
     Ok(user)
 }
@@ -232,14 +235,19 @@ pub async fn create_admin(admin: Admin) -> Result<PutItemOutput, Box<dyn Error>>
     Ok(output)
 }
 
-pub async fn approve_post(post:Post) -> Result<UpdateItemOutput, Box<dyn Error>> {
+pub async fn approve_post(post_id:String) -> Result<UpdateItemOutput, Box<dyn Error>> {
     let client: &DynamoDbClient = get_client().await;
     let id = AttributeValue {
-        s: Some(post.id),
+        s: Some(post_id),
         ..Default::default()
     };
+    // let created_at = AttributeValue {
+    //     s: Some(post.created_at.to_rfc3339().to_string()),
+    //     ..Default::default()
+    // };
     let mut key: HashMap<String,AttributeValue> = HashMap::new();
     key.insert("id".to_string(), id);
+    // key.insert("created_at".to_string(), created_at);
     let mut expression_attribute_values = HashMap::new();
     expression_attribute_values.insert(":approved".to_string(), AttributeValue {
         bool: Some(true),
@@ -254,6 +262,8 @@ pub async fn approve_post(post:Post) -> Result<UpdateItemOutput, Box<dyn Error>>
     };
 
     let output = client.update_item(input).await?;
+
+    dbg!(&output.clone());
 
     Ok(output)
 }
