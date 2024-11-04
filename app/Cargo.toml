@@ -38,6 +38,7 @@ aws_lambda_events = {version = "0.15.1"}
 whirlpool = "0.10.4"
 base16ct = "0.2.0"
 base64ct = {version="1.6.0", features = ["std"]}
+rusoto_rekognition = {version="0.48.0", default-features = false, features = ["rustls"]}
 
 [features]
 default = ["api-server"]

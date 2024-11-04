@@ -136,7 +136,7 @@ pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebRe
 }
 
 pub async fn upload_to_s3(path:&Path, new_filename:String) -> Result<rusoto_s3::PutObjectOutput, Box<dyn std::error::Error>> {
-    let bucket = std::env::var("S3_BUCKET").unwrap();
+    let bucket = std::env::var("S3_BUCKET").unwrap_or("crustchan-resources".to_string());
     let client = rusoto_s3::S3Client::new(AWS_REGION);
 
     let file = std::fs::File::open(path).unwrap();

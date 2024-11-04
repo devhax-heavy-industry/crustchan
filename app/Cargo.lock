@@ -959,6 +959,7 @@ dependencies = [
  "rand 0.7.3",
  "rusoto_core",
  "rusoto_dynamodb",
+ "rusoto_rekognition",
  "rusoto_s3",
  "rust-crypto",
  "serde",
@@ -2852,6 +2853,20 @@ name = "rusoto_dynamodb"
 version = "0.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "63ad8e126a46122a171587bbee590c5a51f311b65a5e83bb78a1f2adee720762"
+dependencies = [
+ "async-trait",
+ "bytes 1.8.0",
+ "futures 0.3.31",
+ "rusoto_core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "rusoto_rekognition"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8b1630c613f5eac8a4273ec313a9fa0750dc5591ed7c26b92f89b9c382c11dd"
 dependencies = [
  "async-trait",
  "bytes 1.8.0",
