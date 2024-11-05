@@ -106,8 +106,6 @@ pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebRe
         }
     }
     post.ip = addr.unwrap().to_string();
-    dbg!(&post.clone());
-    // Ok(GenericResponse::new(warp::http::StatusCode::CREATED, "File uploaded".to_string()));
 
     if post.board_id.is_empty() {
         let response = GenericResponse::new(

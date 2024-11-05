@@ -4,7 +4,7 @@ use tracing::info;
 
 pub async fn get_post_by_id_handler(_board_id: String, post_id: String) -> WebResult {
     info!("get_post_by_id_handler:");
-    let post = get_post_by_id( post_id).await.unwrap();
+    let post = get_post_by_id(post_id).await.unwrap();
 
     let message = serde_json::to_string(&post).unwrap();
 

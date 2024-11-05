@@ -2,7 +2,6 @@ pub mod dynamodb;
 pub mod models;
 pub mod rejections;
 pub mod response;
-pub mod utils;
 use rusoto_core::Region;
 
 pub const AWS_REGION: Region = Region::UsWest2;
