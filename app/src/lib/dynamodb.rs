@@ -45,7 +45,6 @@ pub async fn get_client() -> &'static DynamoDbClient {
 pub async fn create_post(post: Post) -> Result<PutItemOutput, Box<dyn Error>> {
     let client: &DynamoDbClient = get_client().await;
     let item = to_item(post.clone())?;
-
     let input = PutItemInput {
         table_name: POSTS_TABLE_NAME.to_string(),
         item,
@@ -108,7 +107,7 @@ pub async fn get_post_by_id(post_id: String) -> Result<Post, Box<dyn Error>> {
     let input = QueryInput {
         table_name: POSTS_TABLE_NAME.to_string(),
         key_condition_expression: Some(
-            "id = :inputpost AND created_at > :inputcreated_at".to_string(),
+            "id = :inputpost".to_string(),
         ),
         expression_attribute_values: Some(
             [
@@ -119,13 +118,13 @@ pub async fn get_post_by_id(post_id: String) -> Result<Post, Box<dyn Error>> {
                         ..Default::default()
                     },
                 ),
-                (
-                    ":inputcreated_at".to_string(),
-                    AttributeValue {
-                        s: Some("00000".to_string()),
-                        ..Default::default()
-                    },
-                ),
+                // (
+                //     ":inputcreated_at".to_string(),
+                //     AttributeValue {
+                //         s: Some("00000".to_string()),
+                //         ..Default::default()
+                //     },
+                // ),
             ]
             .iter()
             .cloned()
@@ -235,35 +234,40 @@ pub async fn create_admin(admin: Admin) -> Result<PutItemOutput, Box<dyn Error>>
     Ok(output)
 }
 
-pub async fn approve_post(post_id:String, created_at:String ) -> Result<UpdateItemOutput, Box<dyn Error>> {
+pub async fn update_post(post: Post) -> Result<PutItemOutput, Box<dyn Error>> {
     let client: &DynamoDbClient = get_client().await;
-    let id = AttributeValue {
-        s: Some(post_id),
-        ..Default::default()
-    };
-    let created_at = AttributeValue {
-        s: Some(created_at),
-        ..Default::default()
-    };
-    let mut key: HashMap<String,AttributeValue> = HashMap::new();
-    key.insert("id".to_string(), id);
-    key.insert("created_at".to_string(), created_at);
-    let mut expression_attribute_values = HashMap::new();
-    expression_attribute_values.insert(":approved".to_string(), AttributeValue {
-        bool: Some(true),
-        ..Default::default()
-    });
-    let input = UpdateItemInput {
+    let item = to_item(post.clone())?;
+
+    let input = PutItemInput {
         table_name: POSTS_TABLE_NAME.to_string(),
-        key: key,
-        update_expression: Some("SET approved = :approved".to_string()),
-        expression_attribute_values:Some(expression_attribute_values),
+        item,
         ..Default::default()
     };
 
-    let output = client.update_item(input).await?;
+    let output = client.put_item(input).await?;
 
-    dbg!(&output.clone());
+    Ok(output)
+}
 
+pub async fn approve_post(post_id:String) -> Result<PutItemOutput, Box<dyn Error>> {
+    info!("Fetching post by id {}", post_id.clone());
+    let mut post = get_post_by_id(post_id.clone()).await?;
+    info!("Post fetched: {:?}", post.clone());
+    post.approved = true;
+    post.rejected = false;
+    info!("Updating post");
+    let output = update_post(post).await?;
+    Ok(output)
+}
+
+
+pub async fn reject_post(post_id:String) -> Result<PutItemOutput, Box<dyn Error>> {
+    info!("Fetching post by id {}", post_id.clone());
+    let mut post = get_post_by_id(post_id.clone()).await?;
+    info!("Post fetched: {:?}", post.clone());
+    post.approved = false;
+    post.rejected = true;
+    info!("Updating post");
+    let output = update_post(post).await?;
     Ok(output)
 }

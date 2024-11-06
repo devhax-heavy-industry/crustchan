@@ -46,20 +46,16 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
 #[tokio::main]
 async fn main() {
     let static_route = warp::fs::dir("static");
-    let get_routes =
-        warp::get()
-        .and(static_route
-        .or(admin_routes_get())
-        .or(board_routes_get())
-        .or(post_routes_get()));
-    let post_routes =warp::post()
-        .and(admin_approve_post_route().or(admin_routes_post()).or(post_routes_post()));
+    let routes = static_route
+        .or(admin_routes())
+        .or(board_routes())
+        .or(post_routes());
+
     let log_filter = std::env::var("RUST_LOG")
-        .unwrap_or_else(|_| "tracing=info,warp=debug,crustchan=trace,crustchan-api=trace".to_owned());
+        .unwrap_or_else(|_| "tracing=info,warp=info,warp::filters=debug,crustchan=debug,crustchan-api=debug".to_owned());
     tracing_subscriber::fmt()
         // .text()
         .with_thread_names(false)
-        .with_max_level(tracing::Level::DEBUG)
         // Use the filter we built above to determine which traces to record.
         .with_env_filter(log_filter)
         // Record an event when each span closes. This can be used to time our
@@ -75,7 +71,7 @@ async fn main() {
     // load up our project's routes
     let routes =
         post_routes 
-        .or(get_routes)
+        // .or(get_routes)
         .with(warp::compression::gzip())
         .with(warp::log("crustchan-api"))
         .with(warp::trace::request())

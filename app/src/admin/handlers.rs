@@ -1,5 +1,5 @@
 use crate::auth::{AuthnToken,login};
-use crustchan::dynamodb::{approve_post, create_board};
+use crustchan::dynamodb::{approve_post, create_board, reject_post};
 use crustchan::models::Board;
 use crustchan::rejections::{InvalidUser, InvalidPost};
 use crustchan::response::{GenericResponse, WebResult};
@@ -89,8 +89,7 @@ pub async fn approve_post_handler(_token: impl Reply, json_body: HashMap<String,
     info!("approve_post_handler:");
     let post_id = json_body.get("id").unwrap();
 
-    let created_at = json_body.get("created_at").unwrap();
-    let output = approve_post(post_id.clone(), created_at.clone()).await;
+    let output = approve_post(post_id.clone()).await;
     match output {
         Ok(_) => {
             const MESSAGE: &str = "lel approve em all";
@@ -107,4 +106,23 @@ pub async fn approve_post_handler(_token: impl Reply, json_body: HashMap<String,
     }
 
 
+}
+
+pub async fn reject_post_handler(_token: impl Reply, json_body: HashMap<String, String>) -> WebResult {
+    info!("approve_post_handler:");
+    let post_id = json_body.get("id").unwrap();
+    let output = reject_post(post_id.clone()).await;
+    match output {
+        Ok(msg) => {
+            let message: String = serde_json::to_string(&msg).unwrap();
+            let response = GenericResponse::new(warp::http::StatusCode::OK, message.to_string());
+            info!("response: {:?}", response);
+            Ok(response)
+        }
+        Err(e) => {
+            error!("approve_post_handler error: {:?}", e);
+            let rejection = warp::reject::custom(InvalidPost);
+            Err(rejection)
+        }
+    }
 }
