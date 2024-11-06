@@ -8,5 +8,5 @@ pub use routes::*;
 
 pub fn post_routes() -> BoxedFilter<(impl Reply,)> {
     
-    post_route().or(posts_by_board_route())
+    post_route().or(posts_by_board_route()).boxed()
 }

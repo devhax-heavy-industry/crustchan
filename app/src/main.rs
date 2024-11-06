@@ -69,9 +69,8 @@ async fn main() {
     };
 
     // load up our project's routes
-    let routes =
-        post_routes 
-        // .or(get_routes)
+    let serve_routes =
+        routes
         .with(warp::compression::gzip())
         .with(warp::log("crustchan-api"))
         .with(warp::trace::request())
@@ -81,5 +80,5 @@ async fn main() {
     let _admin = check_for_admin_user().await;
 
     // start the http server
-    warp::serve(routes).run((Ipv4Addr::LOCALHOST, port)).await
+    warp::serve(serve_routes).run((Ipv4Addr::LOCALHOST, port)).await
 }
