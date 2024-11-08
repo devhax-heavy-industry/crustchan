@@ -3,7 +3,7 @@ use warp::http::header::HeaderValue;
 use warp::hyper::Body;
 use warp::reject::Rejection;
 use warp::{http::Response, Reply};
-
+use std::string::ToString;
 pub type WebResult = std::result::Result<GenericResponse, Rejection>;
 
 // pub trait New<'a, T> {
@@ -33,11 +33,18 @@ impl<'a> GenericResponse {
         ret.message = serde_json::to_string(&message).unwrap();
         ret
     }
+    pub fn new_from_string(status_code: warp::http::StatusCode, message: String) -> GenericResponse {
+        let mut ret = GenericResponse::default();
+        ret.status_code = status_code;
+        ret.message = message.clone();
+        ret
+    }
 }
 
 impl Reply for GenericResponse {
     fn into_response(self) -> Response<Body> {
-        let body = Body::from(serde_json::to_string(&self.message).unwrap());
+        let bodystr = &self.message.clone();
+        let body = Body::from(bodystr.to_string());
         let mut response = Response::new(body);
         response
             .headers_mut()

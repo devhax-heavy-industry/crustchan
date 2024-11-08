@@ -46,10 +46,11 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
 #[tokio::main]
 async fn main() {
     let static_route = warp::fs::dir("static");
-    let routes = static_route
+    let routes = 
+        board_routes()
+        .or(post_routes())
         .or(admin_routes())
-        .or(board_routes())
-        .or(post_routes());
+        .or(static_route);
 
     let log_filter = std::env::var("RUST_LOG")
         .unwrap_or_else(|_| "tracing=info,warp=info,warp::filters=debug,crustchan=debug,crustchan-api=debug".to_owned());

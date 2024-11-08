@@ -68,7 +68,7 @@ pub async fn login_handler(
         Ok(token_result) => {
             let msg = format!("Welcome back, {}", actual_user.username);
             Ok(warp::reply::with_header(
-                GenericResponse::new(warp::http::StatusCode::OK, msg),
+                GenericResponse::new_from_string(warp::http::StatusCode::OK, msg),
                 "Set-Cookie",
                 token_result.header_val(),
             ))
@@ -91,10 +91,8 @@ pub async fn approve_post_handler(_token: impl Reply, json_body: HashMap<String,
 
     let output = approve_post(post_id.clone()).await;
     match output {
-        Ok(_) => {
-            const MESSAGE: &str = "lel approve em all";
-
-            let response = GenericResponse::new(warp::http::StatusCode::OK, MESSAGE.to_string());
+        Ok(msg) => {
+            let response = GenericResponse::new(warp::http::StatusCode::OK, msg);
             info!("response: {:?}", response);
             Ok(response)
         }
@@ -114,8 +112,7 @@ pub async fn reject_post_handler(_token: impl Reply, json_body: HashMap<String, 
     let output = reject_post(post_id.clone()).await;
     match output {
         Ok(msg) => {
-            let message: String = serde_json::to_string(&msg).unwrap();
-            let response = GenericResponse::new(warp::http::StatusCode::OK, message.to_string());
+            let response = GenericResponse::new(warp::http::StatusCode::OK, msg);
             info!("response: {:?}", response);
             Ok(response)
         }

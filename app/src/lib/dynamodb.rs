@@ -5,16 +5,13 @@ use rusoto_dynamodb::{
     AttributeValue, 
     DynamoDb, 
     DynamoDbClient, 
-    PutItemInput, 
-    UpdateItemInput, 
-    UpdateItemOutput,
+    PutItemInput,
     PutItemOutput, 
     QueryInput, 
     ScanInput,
 };
 use serde::Deserialize;
-use serde_dynamo::{from_item, to_item, Item};
-use std::collections::HashMap;
+use serde_dynamo::{from_item, to_item};
 use std::error::Error;
 use tokio::sync::OnceCell;
 use tracing::{info, warn};

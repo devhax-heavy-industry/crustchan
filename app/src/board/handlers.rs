@@ -6,17 +6,15 @@ pub async fn get_post_by_id_handler(_board_id: String, post_id: String) -> WebRe
     info!("get_post_by_id_handler:");
     let post = get_post_by_id(post_id).await.unwrap();
 
-    let message = serde_json::to_string(&post).unwrap();
 
-    let response = GenericResponse::new(warp::http::StatusCode::OK, message);
+    let response = GenericResponse::new(warp::http::StatusCode::OK, post);
     Ok(response)
 }
 
 pub async fn get_boards_handler() -> WebResult {
     info!("get_boards_handler:");
     let boards = list_boards().await.unwrap();
-    let string_with_escapes = serde_json::to_string(&boards).unwrap();
 
-    let response = GenericResponse::new(warp::http::StatusCode::OK, string_with_escapes);
+    let response = GenericResponse::new(warp::http::StatusCode::OK, boards);
     Ok(response)
 }
