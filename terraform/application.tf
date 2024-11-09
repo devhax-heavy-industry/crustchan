@@ -61,12 +61,39 @@ resource "aws_key_pair" "ec2_key_pair" {
 
 resource "aws_s3_bucket" "app_resources" {
   bucket = "crustchan-resources"
-
+  
   tags = {
     Name        = "Crustchan Resources"
     Environment = "Dev"
   }
 }
+
+resource "aws_s3_bucket_policy" "allow_from_rekognition" {
+  bucket = aws_s3_bucket.app_resources.id
+
+  policy = jsonencode({
+        {
+            "Sid": "Statement1",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "rekognition.amazonaws.com"
+            },
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::crustchan-resources"
+        },
+        {
+            "Sid": "allow-account-acces",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "*"
+            },
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::crustchan-resources"
+        }]
+  )
+}
+
+
 resource "aws_s3_bucket_website_configuration" "app_resources" {
   bucket = aws_s3_bucket.app_resources.id
   # acl    = "public-read"
