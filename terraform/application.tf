@@ -81,7 +81,7 @@ resource "aws_s3_bucket_policy" "allow_from_rekognition" {
 				"Service": "rekognition.amazonaws.com"
 			},
 			"Action": "s3:*",
-			"Resource": "arn:aws:s3:::${aws_s3_bucket.app_resources.name}"
+			"Resource": "arn:aws:s3:::${aws_s3_bucket.app_resources.id}"
 		},
 		{
 			"Sid": "allow-account-acces",
@@ -90,7 +90,7 @@ resource "aws_s3_bucket_policy" "allow_from_rekognition" {
 			    "AWS": "arn:aws:iam::611250396493:role/${aws_iam_role.api_server_role.name}"
 			},
 			"Action": "s3:*",
-			"Resource": "arn:aws:s3:::${aws_s3_bucket.app_resources.name}/*"
+			"Resource": "arn:aws:s3:::${aws_s3_bucket.app_resources.id}/*"
 		}
 	]
   })
@@ -248,7 +248,7 @@ resource "aws_lambda_event_source_mapping" "dynamodb-stream-to-lambda" {
   starting_position = "LATEST"
 }
 resource "aws_ecr_repository" "docker_repo" {
-  name                 = "Docker Repo"
+  name                 = "docker_repo"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
