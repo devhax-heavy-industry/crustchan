@@ -14,7 +14,6 @@ futures-util = "0.3.31"
 uuid = {version="1.11.0", features=["v4"]}
 chrono = "0.4.38"
 aws-config = "1.5.9"
-aws-sdk-dynamodb = "1.51.0"
 anyhow = "1.0.91"
 serde_dynamo = { version = "4", features = ["rusoto_dynamodb+0_48"] }
 serde_derive = "1.0.213"
@@ -23,7 +22,6 @@ rusoto_core = { version = "0.48", default-features = false, features = ["rustls"
 rusoto_dynamodb = { version = "0.48", default-features = false, features = ["rustls","serialize_structs"] }
 serde_json = "1.0.132"
 unescape = "0.1.0"
-argonautica = {version = "0.2.0", features = ["serde"], optional = true}
 rust-crypto = {version = "0.2.36", optional = true}
 rand = "0.7.3"
 ed25519-dalek = {version = "1.0.0" , features=["serde"], optional = true}
@@ -43,7 +41,7 @@ rusoto_rekognition = {version="0.48.0", default-features = false, features = ["r
 [features]
 default = ["api-server"]
 lambda = ["lambda_runtime"]
-api-server = ["dep:argonautica",  "rust-crypto", "ed25519-dalek", "multer"]
+api-server = [ "rust-crypto", "ed25519-dalek", "multer"]
 
 
 [[bin]]
