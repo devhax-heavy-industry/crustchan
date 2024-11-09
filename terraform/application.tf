@@ -72,25 +72,28 @@ resource "aws_s3_bucket_policy" "allow_from_rekognition" {
   bucket = aws_s3_bucket.app_resources.id
 
   policy = jsonencode({
-        {
-            "Sid": "Statement1",
-            "Effect": "Allow",
-            "Principal": {
-                "Service": "rekognition.amazonaws.com"
-            },
-            "Action": "s3:*",
-            "Resource": "arn:aws:s3:::crustchan-resources"
-        },
-        {
-            "Sid": "allow-account-acces",
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "*"
-            },
-            "Action": "s3:*",
-            "Resource": "arn:aws:s3:::crustchan-resources"
-        }]
-  )
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "Statement1",
+			"Effect": "Allow",
+			"Principal": {
+				"Service": "rekognition.amazonaws.com"
+			},
+			"Action": "s3:*",
+			"Resource": "arn:aws:s3:::${aws_s3_bucket.app_resources.name}"
+		},
+		{
+			"Sid": "allow-account-acces",
+			"Effect": "Allow",
+			"Principal": {
+			    "AWS": "arn:aws:iam::611250396493:role/${aws_iam_role.api_server_role.name}"
+			},
+			"Action": "s3:*",
+			"Resource": "arn:aws:s3:::${aws_s3_bucket.app_resources.name}/*"
+		}
+	]
+  })
 }
 
 
