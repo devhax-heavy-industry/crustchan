@@ -5,6 +5,7 @@ resource "aws_vpc" "vpc" {
 
   tags = {
     environment = var.environment
+    name = var.name
   }
 }
 resource "aws_route_table" "route_table" {
@@ -18,6 +19,7 @@ resource "aws_route_table" "route_table" {
 
   tags = {
     environment = var.environment
+    name = "${var.name}-route-table"
   }
 }
 
@@ -25,12 +27,17 @@ resource "aws_route_table_association" route_table_association {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = concat(aws_route_table.route_table.*.id, [""])[0]
 }
+resource "aws_route_table_association" "subnet2_route" {
+ subnet_id      = aws_subnet.subnet2.id
+ route_table_id = aws_route_table.route_table.id
+}
 
 resource "aws_internet_gateway" "internet_gateway" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
     environment = var.environment
+    name = "${var.name}-internet-gateway"
   }
 }
 
@@ -42,5 +49,17 @@ resource "aws_subnet" "public_subnet" {
 
   tags = {
     environment = var.environment
+    name = "${var.name}-public-subnet"
+  }
+}
+resource "aws_subnet" "subnet2" {
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = var.aws_secondary_az
+  map_public_ip_on_launch = true
+
+  tags = {
+    environment = var.environment
+    name = "${var.name}-public-subnet"
   }
 }

@@ -3,6 +3,7 @@ pub mod auth;
 pub mod board;
 pub mod middleware;
 pub mod post;
+pub mod health;
 
 use std::env;
 use std::net::Ipv4Addr;

@@ -4,6 +4,10 @@ variable "environment" {
   description = "The environment."
   default     = "dev"
 }
+variable "account_id" {
+  description = "The AWS account ID."
+  default     = "611250396493"
+}
 
 variable "name" {
   description = "The name of the application."
@@ -17,7 +21,10 @@ variable "AWS_DEFAULT_REGION" {
 variable "aws_default_az" {
   description = "The AWS default availability zone"
   default     = "us-west-2a"
-  
+}
+variable "aws_secondary_az" {
+  description = "The AWS default availability zone"
+  default     = "us-west-2b"
 }
 variable "AWS_ACCESS_KEY_ID" {
   description = "value of AWS_ACCESS_KEY_ID"

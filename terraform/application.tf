@@ -1,21 +1,21 @@
-resource "aws_instance" "ec2" {
+# resource "aws_instance" "ec2" {
 
-  ami                         = "ami-001651dd1b19ebcb6" # ubuntu 24.04
-  instance_type               = "t2.micro"
+#   ami                         = "ami-001651dd1b19ebcb6" # ubuntu 24.04
+#   instance_type               = "t2.micro"
 
-  subnet_id                   = aws_subnet.public_subnet.id
-  vpc_security_group_ids      = [aws_security_group.ec2_security_group.id]
-  associate_public_ip_address = true
+#   subnet_id                   = aws_subnet.public_subnet.id
+#   vpc_security_group_ids      = [aws_security_group.ec2_security_group.id]
+#   associate_public_ip_address = true
 
-  key_name                    = aws_key_pair.ec2_key_pair.key_name
-  iam_instance_profile        = "${aws_iam_instance_profile.crustchan_api_profile.name}"
+#   key_name                    = aws_key_pair.ec2_key_pair.key_name
+#   iam_instance_profile        = "${aws_iam_instance_profile.crustchan_api_profile.name}"
 
 
-  tags = {
-    name = var.name
-    environment = var.environment
-  }
-}
+#   tags = {
+#     name = var.name
+#     environment = var.environment
+#   }
+# }
 
 
 resource "aws_security_group" "ec2_security_group" {
@@ -90,7 +90,7 @@ resource "aws_s3_bucket_policy" "allow_from_rekognition" {
 			"Sid": "allow-account-access-from-api-server",
 			"Effect": "Allow",
 			"Principal": {
-				"AWS": "arn:aws:iam::611250396493:role/api_server_role"
+				"AWS": "arn:aws:iam::${var.account_id}:role/api_server_role"
 			},
 			"Action": "s3:*",
 			"Resource": "arn:aws:s3:::crustchan-resources/*"
@@ -99,7 +99,7 @@ resource "aws_s3_bucket_policy" "allow_from_rekognition" {
 			"Sid": "allow-account-access-from-account",
 			"Effect": "Allow",
 			"Principal": {
-				"AWS": "arn:aws:iam::611250396493:root"
+				"AWS": "arn:aws:iam::${var.account_id}:root"
 			},
 			"Action": "s3:*",
 			"Resource": "arn:aws:s3:::crustchan-resources/*"
@@ -117,7 +117,7 @@ resource "aws_s3_bucket_policy" "allow_from_rekognition" {
 			"Resource": "arn:aws:s3:::crustchan-resources/*",
 			"Condition": {
 				"ForAnyValue:StringNotEquals": {
-					"aws:PrincipalAccount": "611250396493"
+					"aws:PrincipalAccount": "${var.account_id}"
 				}
 			}
 		},
@@ -131,7 +131,7 @@ resource "aws_s3_bucket_policy" "allow_from_rekognition" {
 			"Resource": "arn:aws:s3:::crustchan-resources",
 			"Condition": {
 				"ForAnyValue:StringNotEquals": {
-					"aws:PrincipalAccount": "611250396493"
+					"aws:PrincipalAccount": "${var.account_id}"
 				}
 			}
 		},
@@ -315,3 +315,5 @@ resource "aws_ecr_repository" "docker_repo" {
     environment = var.environment
   }
 }
+
+
