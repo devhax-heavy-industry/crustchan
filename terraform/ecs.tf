@@ -56,7 +56,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
    }
  ])
 }
- 
+
 resource "aws_ecs_service" "ecs_service" {
  name            = "${var.name}-ecs-service"
  cluster         = aws_ecs_cluster.ecs_cluster.id
@@ -95,7 +95,7 @@ resource "aws_ecs_service" "ecs_service" {
 resource "aws_launch_template" "ecs_lt" {
 
  name_prefix   = "${var.name}-ecs-template"
- image_id      = "ami-001651dd1b19ebcb6"
+ image_id      = "ami-0bc0e3f05be3e28d5"
  instance_type = "t3.micro"
  vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 
