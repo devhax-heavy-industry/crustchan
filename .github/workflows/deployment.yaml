@@ -35,7 +35,7 @@ jobs:
         with:
           audience: sts.amazonaws.com
           aws-region: us-west-2
-          role-to-assume: arn:aws-cn:iam::611250396493:role/GithubActionsForDHI
+          role-to-assume: arn:aws:iam::611250396493:role/GithubActionsForDHI
 
       - name: Login to Amazon ECR
         id: login-ecr
