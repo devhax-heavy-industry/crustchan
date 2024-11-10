@@ -31,7 +31,7 @@ resource "aws_ecs_cluster_capacity_providers" "capacity_providers" {
 
 resource "aws_ecs_task_definition" "ecs_task_definition" {
  family             = "${var.name}-ecs-task"
- network_mode       = "host"
+#  network_mode       = "host"
  execution_role_arn = aws_iam_role.ecsTaskExecutionRole.arn
  cpu                = 256
  runtime_platform {
