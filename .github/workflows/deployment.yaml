@@ -11,6 +11,8 @@ env:
   ECR_REPOSITORY: crustchan
   ECS_SERVICE: crustchan-ecs-service
   ECS_CLUSTER: crustchan-ecs-cluster
+  ECS_TASK_DEFINITION: crustchan-ecs-task
+  CONTAINER_NAME: crustchan
 
 name: "Test Suite"
 on:
@@ -20,7 +22,7 @@ on:
 
 jobs:
   deploy:
-    name: cargo test
+    name: Docker build and deploy to ECS
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
@@ -53,7 +55,7 @@ jobs:
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
