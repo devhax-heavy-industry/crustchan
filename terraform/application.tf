@@ -75,22 +75,71 @@ resource "aws_s3_bucket_policy" "allow_from_rekognition" {
 	"Version": "2012-10-17",
 	"Statement": [
 		{
-			"Sid": "Statement1",
+			"Sid": "Allow Rekognition",
 			"Effect": "Allow",
 			"Principal": {
 				"Service": "rekognition.amazonaws.com"
 			},
 			"Action": "s3:*",
-			"Resource": "arn:aws:s3:::${aws_s3_bucket.app_resources.id}"
+			"Resource": "arn:aws:s3:::crustchan-resources"
 		},
 		{
-			"Sid": "allow-account-acces",
+			"Sid": "allow-account-access-from-api-server",
 			"Effect": "Allow",
 			"Principal": {
-			    "AWS": "arn:aws:iam::611250396493:role/${aws_iam_role.api_server_role.name}"
+				"AWS": "arn:aws:iam::611250396493:role/api_server_role"
 			},
 			"Action": "s3:*",
-			"Resource": "arn:aws:s3:::${aws_s3_bucket.app_resources.id}/*"
+			"Resource": "arn:aws:s3:::crustchan-resources/*"
+		},
+		{
+			"Sid": "allow-account-access-from-account",
+			"Effect": "Allow",
+			"Principal": {
+				"AWS": "arn:aws:iam::611250396493:root"
+			},
+			"Action": "s3:*",
+			"Resource": "arn:aws:s3:::crustchan-resources/*"
+		},
+    {
+			"Sid": "DenyPublicListPutEtc",
+			"Effect": "Deny",
+			"Principal": {
+				"AWS": "*"
+			},
+			"Action": [
+				"s3:PutObject",
+				"s3:DeleteObject"
+			],
+			"Resource": "arn:aws:s3:::crustchan-resources/*",
+			"Condition": {
+				"ForAnyValue:StringNotEquals": {
+					"aws:PrincipalAccount": "611250396493"
+				}
+			}
+		},
+		{
+			"Sid": "DenyPublicBucketStuff",
+			"Effect": "Deny",
+			"Principal": {
+				"AWS": "*"
+			},
+			"Action": "s3:ListBucket",
+			"Resource": "arn:aws:s3:::crustchan-resources",
+			"Condition": {
+				"ForAnyValue:StringNotEquals": {
+					"aws:PrincipalAccount": "611250396493"
+				}
+			}
+		},
+		{
+			"Sid": "AllowPublicGetObject",
+			"Effect": "Allow",
+			"Principal": {
+				"AWS": "*"
+			},
+			"Action": "s3:GetObject",
+			"Resource": "arn:aws:s3:::crustchan-resources/*"
 		}
 	]
   })
