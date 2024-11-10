@@ -64,7 +64,7 @@ resource "aws_ecs_service" "ecs_service" {
  desired_count   = 2
 
  network_configuration {
-   subnets         = [aws_subnet.public_subnet, aws_subnet.subnet2.id]
+   subnets         = [aws_subnet.public_subnet.id, aws_subnet.subnet2.id]
    security_groups = [aws_security_group.ec2_security_group.id]
  }
 
@@ -123,7 +123,7 @@ resource "aws_launch_template" "ecs_lt" {
 }
 
 resource "aws_autoscaling_group" "ecs_asg" {
- vpc_zone_identifier = [aws_subnet.public_subnet, aws_subnet.subnet2.id]
+ vpc_zone_identifier = [aws_subnet.public_subnet.id, aws_subnet.subnet2.id]
  desired_capacity    = 1
  max_size            = 1
  min_size            = 1
@@ -145,7 +145,7 @@ resource "aws_lb" "ecs_alb" {
  internal           = false
  load_balancer_type = "application"
  security_groups    = [aws_security_group.ec2_security_group.id]
- subnets            = [aws_subnet.public_subnet, aws_subnet.subnet2.id]
+ subnets            = [aws_subnet.public_subnet.id, aws_subnet.subnet2.id]
 
   tags = {
     name = var.name
