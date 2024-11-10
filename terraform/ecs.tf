@@ -101,7 +101,7 @@ resource "aws_launch_template" "ecs_lt" {
  vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 
  iam_instance_profile {
-   name = "${aws_iam_instance_profile.crustchan_api_profile.name}"
+   arn = "${aws_iam_instance_profile.crustchan_api_profile.arn}"
  }
 
  block_device_mappings {
