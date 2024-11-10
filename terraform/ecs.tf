@@ -97,11 +97,10 @@ resource "aws_launch_template" "ecs_lt" {
  name_prefix   = "${var.name}-ecs-template"
  image_id      = "ami-001651dd1b19ebcb6"
  instance_type = "t3.micro"
- key_name               = "ec2ecsglog"
  vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 
  iam_instance_profile {
-   arn = "${aws_iam_instance_profile.crustchan_api_profile.arn}"
+   arn = aws_iam_instance_profile.crustchan_api_profile.arn
  }
 
  block_device_mappings {
