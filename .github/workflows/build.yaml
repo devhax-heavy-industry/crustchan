@@ -6,7 +6,7 @@ env:
   ECS_TASK_DEFINITION: crustchan-ecs-task
   CONTAINER_NAME: crustchan
 
-name: "Deployment"
+name: "Build"
 
 on:
   push:
@@ -22,7 +22,6 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          profile: minimal
           components: rustfmt clippy
       - name: Set up cargo cache
         uses: actions/cache@v3
@@ -48,7 +47,6 @@ jobs:
         with:
           toolchain: stable
           components: rustfmt, clippy
-          profile: minimal
       - name: Set up cargo cache
         uses: actions/cache@v3
         continue-on-error: false
