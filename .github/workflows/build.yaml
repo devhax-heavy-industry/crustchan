@@ -36,7 +36,10 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
-      - run: cd app && cargo build --release --bin crustchan-api
+      - name: Build API server
+        run: cd app && cargo build --release --bin crustchan-api
+      - name: Build Lambda
+        run: cargo run-script build-lambda
 
   format:
     name: Format Application
@@ -63,5 +66,6 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
       - name: Lint
         run: |
+          cd app
           cargo fmt --all -- --check
           cargo clippy -- -D warnings
