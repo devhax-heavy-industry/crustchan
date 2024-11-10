@@ -8,8 +8,11 @@ resource "aws_instance" "ec2" {
   associate_public_ip_address = true
 
   key_name                    = aws_key_pair.ec2_key_pair.key_name
+  iam_instance_profile        = "${aws_iam_instance_profile.crustchan_api_profile.name}"
+
 
   tags = {
+    name = var.name
     environment = var.environment
   }
 }
@@ -63,8 +66,8 @@ resource "aws_s3_bucket" "app_resources" {
   bucket = "crustchan-resources"
   
   tags = {
-    Name        = "Crustchan Resources"
-    Environment = "Dev"
+    name = var.name
+    environment = var.environment
   }
 }
 
@@ -208,6 +211,7 @@ resource "aws_dynamodb_table" "crustchan_posts" {
   }
 
   tags = {
+    name = var.name
     environment = var.environment
   }
   
@@ -238,7 +242,8 @@ resource "aws_dynamodb_table" "crustchan_boards" {
     range_key = "created_at"
     projection_type    = "ALL"
   }
-    tags = {
+  tags = {
+    name = var.name
     environment = var.environment
   }
 }
@@ -268,7 +273,8 @@ resource "aws_dynamodb_table" "crustchan_admin" {
     range_key = "created_at"
     projection_type    = "ALL"
   }
-    tags = {
+  tags = {
+    name = var.name
     environment = var.environment
   }
 }
@@ -286,6 +292,7 @@ module "lambda_function" {
     RUST_LOG = "crustchan-approve-post::debug"
   }
   tags = {
+    name = var.name
     environment = var.environment
   }
   ignore_source_code_hash = true
@@ -303,7 +310,8 @@ resource "aws_ecr_repository" "docker_repo" {
   image_scanning_configuration {
     scan_on_push = true
   }
-    tags = {
+  tags = {
+    name = var.name
     environment = var.environment
   }
 }

@@ -32,6 +32,10 @@ data "aws_iam_policy" "dynamodb_access" {
   arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole"
 }
 
+data "aws_iam_policy" "s3_put_object_access" {
+  arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+}
+
 resource "aws_iam_role_policy_attachment" "api_dynamodb_service_role_policy_attach" {
    role       = "${aws_iam_role.api_server_role.name}"
    policy_arn = "${data.aws_iam_policy.dynamodb_access.arn}"

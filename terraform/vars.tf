@@ -5,6 +5,11 @@ variable "environment" {
   default     = "dev"
 }
 
+variable "name" {
+  description = "The name of the application."
+  default     = "crustchan"
+}
+
 variable "AWS_DEFAULT_REGION" {
   description = "The AWS default region"
   default     = "us-west-2"
