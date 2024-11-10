@@ -33,7 +33,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
  family             = "${var.name}-ecs-task"
  network_mode       = "awsvpc"
  execution_role_arn = aws_iam_role.ecsTaskExecutionRole.arn
- cpu                = 256 
+ cpu                = 256
  runtime_platform {
    operating_system_family = "LINUX"
    cpu_architecture        = "X86_64"
