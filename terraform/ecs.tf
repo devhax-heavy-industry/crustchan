@@ -84,7 +84,7 @@ resource "aws_ecs_service" "ecs_service" {
 
  load_balancer {
    target_group_arn = aws_lb_target_group.ecs_tg.arn
-   container_name   = "dockergs"
+   container_name   = var.name
    container_port   = 80
  }
  depends_on = [aws_autoscaling_group.ecs_asg]
