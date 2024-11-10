@@ -21,8 +21,9 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
-          components: rustfmt clippy
+          components: rustfmt, clippy
+          profile: minimal
+          toolchain: "1.82"
       - name: Set up cargo cache
         uses: actions/cache@v3
         continue-on-error: false
@@ -45,8 +46,9 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
           components: rustfmt, clippy
+          profile: minimal
+          toolchain: "1.82"
       - name: Set up cargo cache
         uses: actions/cache@v3
         continue-on-error: false
