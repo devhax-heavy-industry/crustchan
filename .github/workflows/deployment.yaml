@@ -14,7 +14,7 @@ env:
   ECS_TASK_DEFINITION: crustchan-ecs-task
   CONTAINER_NAME: crustchan
 
-name: "Test Suite"
+name: "Deployment"
 
 on:
   push:

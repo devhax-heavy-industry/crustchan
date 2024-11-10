@@ -25,3 +25,5 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y ca-certificates
 COPY --from=builder /app/target/release/crustchan-api /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/crustchan-api"]
+
+EXPOSE 3000
