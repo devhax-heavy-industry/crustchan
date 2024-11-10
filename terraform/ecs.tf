@@ -49,7 +49,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
      portMappings = [
        {
          containerPort = 3000
-         hostPort      = 3000
+         hostPort      = 80
          protocol      = "tcp"
        }
      ]
@@ -85,7 +85,7 @@ resource "aws_ecs_service" "ecs_service" {
  load_balancer {
    target_group_arn = aws_lb_target_group.ecs_tg.arn
    container_name   = var.name
-   container_port   = 3000
+   container_port   = 80
  }
  depends_on = [aws_autoscaling_group.ecs_asg]
 }
@@ -165,7 +165,7 @@ resource "aws_lb_listener" "ecs_alb_listener" {
 
 resource "aws_lb_target_group" "ecs_tg" {
  name        = "ecs-target-group"
- port        = 3000
+ port        = 80
  protocol    = "HTTP"
  target_type = "ip"
  vpc_id      = aws_vpc.vpc.id
