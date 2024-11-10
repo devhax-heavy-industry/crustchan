@@ -31,9 +31,9 @@ resource "aws_ecs_cluster_capacity_providers" "capacity_providers" {
 
 resource "aws_ecs_task_definition" "ecs_task_definition" {
  family             = "${var.name}-ecs-task"
-#  network_mode       = "host"
+ network_mode       = "host"
  execution_role_arn = aws_iam_role.ecsTaskExecutionRole.arn
- cpu                = 256
+ cpu                = 512
  runtime_platform {
    operating_system_family = "LINUX"
    cpu_architecture        = "X86_64"
@@ -43,7 +43,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
    {
      name      = var.name
      image     = "${aws_ecr_repository.docker_repo.repository_url}/${var.name}:latest"
-     cpu       = 256
+     cpu       = 512
      memory    = 512
      essential = true
      portMappings = [
@@ -167,7 +167,7 @@ resource "aws_lb_target_group" "ecs_tg" {
  name        = "ecs-target-group"
  port        = 80
  protocol    = "HTTP"
- target_type = "ip"
+ target_type = "instance"
  vpc_id      = aws_vpc.vpc.id
 
  health_check {
