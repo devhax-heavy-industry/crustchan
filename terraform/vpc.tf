@@ -9,7 +9,6 @@ resource "aws_vpc" "vpc" {
   }
 }
 resource "aws_route_table" "route_table" {
-  count  = 1
   vpc_id = aws_vpc.vpc.id
 
   route {
@@ -25,7 +24,7 @@ resource "aws_route_table" "route_table" {
 
 resource "aws_route_table_association" route_table_association {
   subnet_id      = aws_subnet.public_subnet.id
-  route_table_id = concat(aws_route_table.route_table.*.id, [""])[0]
+  route_table_id = aws_route_table.route_table.id
 }
 resource "aws_route_table_association" "subnet2_route" {
  subnet_id      = aws_subnet.subnet2.id

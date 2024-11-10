@@ -65,7 +65,7 @@ resource "aws_ecs_service" "ecs_service" {
 
  network_configuration {
    subnets         = [aws_subnet.subnet.id, aws_subnet.subnet2.id]
-   security_groups = [aws_security_group.security_group.id]
+   security_groups = [aws_security_group.ec2_security_group.id]
  }
 
  force_new_deployment = true
@@ -98,7 +98,7 @@ resource "aws_launch_template" "ecs_lt" {
  image_id      = "ami-001651dd1b19ebcb6"
  instance_type = "t3.micro"
  key_name               = "ec2ecsglog"
- vpc_security_group_ids = [aws_security_group.security_group.id]
+ vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 
  iam_instance_profile {
    name = "ecsInstanceRole"
@@ -144,8 +144,8 @@ resource "aws_lb" "ecs_alb" {
  name               = "ecs-alb"
  internal           = false
  load_balancer_type = "application"
- security_groups    = [aws_security_group.security_group.id]
- subnets            = [aws_subnet.subnet.id, aws_subnet.subnet2.id]
+ security_groups    = [aws_security_group.ec2_security_group.id]
+ subnets            = [aws_subnet.public_subnet, aws_subnet.subnet2.id]
 
   tags = {
     name = var.name
@@ -169,7 +169,7 @@ resource "aws_lb_target_group" "ecs_tg" {
  port        = 80
  protocol    = "HTTP"
  target_type = "ip"
- vpc_id      = aws_vpc.main.id
+ vpc_id      = aws_vpc.vpc.id
 
  health_check {
    path = "/health"
