@@ -15,6 +15,7 @@ env:
   CONTAINER_NAME: crustchan
 
 name: "Test Suite"
+
 on:
   push:
     branches:
