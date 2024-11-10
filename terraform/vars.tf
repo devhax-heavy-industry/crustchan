@@ -8,7 +8,10 @@ variable "account_id" {
   description = "The AWS account ID."
   default     = "611250396493"
 }
-
+variable "github_iam_role" {
+  description = "The IAM role for GitHub Actions."
+  default     = "GitHubActionsRole"
+}
 variable "name" {
   description = "The name of the application."
   default     = "crustchan"
