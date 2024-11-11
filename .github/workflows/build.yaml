@@ -41,7 +41,7 @@ jobs:
       - name: Build API server
         run: cd app && cargo build --release --bin crustchan-api
       - name: Build Lambda
-        run: cargo run-script build-lambda
+        run: cd app && cargo run-script build-lambda
 
   # format:
   #   name: Format Application

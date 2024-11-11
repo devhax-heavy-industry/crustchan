@@ -95,8 +95,9 @@ resource "aws_ecs_service" "ecs_service" {
 resource "aws_launch_template" "ecs_lt" {
 
  name_prefix   = "${var.name}-ecs-template"
- image_id      = "ami-062c116e449466e7f"
+ image_id      = "ami-0b7c527be879b7737"
  instance_type = "t3.micro"
+ key_name      = "laptop"
  vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 
  iam_instance_profile {
