@@ -64,4 +64,4 @@ test = false
 
 [package.metadata.scripts]
 build-lambda = "cargo lambda build --output-format zip -F lambda --arm64 --no-default-features"
-
+build-api = "cargo build --release --bin crustchan-api"

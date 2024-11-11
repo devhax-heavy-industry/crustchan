@@ -31,7 +31,7 @@ resource "aws_ecs_cluster_capacity_providers" "capacity_providers" {
 
 resource "aws_ecs_task_definition" "ecs_task_definition" {
  family             = "${var.name}-ecs-task"
-#  network_mode       = "host"
+ network_mode       = "bridge"
  execution_role_arn = aws_iam_role.ecsTaskExecutionRole.arn
  cpu                = 512
  runtime_platform {
@@ -126,8 +126,8 @@ resource "aws_autoscaling_group" "ecs_asg" {
  desired_capacity    = 1
  max_size            = 1
  min_size            = 1
-
  launch_template {
+    http_endpoint = "enabled" 
    id      = aws_launch_template.ecs_lt.id
    version = "$Latest"
  }
@@ -172,5 +172,6 @@ resource "aws_lb_target_group" "ecs_tg" {
 
  health_check {
    path = "/health"
+
  }
 }
