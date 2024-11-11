@@ -9,7 +9,7 @@ resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
    auto_scaling_group_arn = aws_autoscaling_group.ecs_asg.arn
 
    managed_scaling {
-     maximum_scaling_step_size = 5
+     maximum_scaling_step_size = 1000
      minimum_scaling_step_size = 1
      status                    = "ENABLED"
      target_capacity           = 1
@@ -31,7 +31,7 @@ resource "aws_ecs_cluster_capacity_providers" "capacity_providers" {
 
 resource "aws_ecs_task_definition" "ecs_task_definition" {
  family             = "${var.name}-ecs-task"
- network_mode       = "bridge"
+ network_mode       = "awsvpc"
  execution_role_arn = aws_iam_role.ecsTaskExecutionRole.arn
  cpu                = 512
  runtime_platform {
@@ -61,7 +61,7 @@ resource "aws_ecs_service" "ecs_service" {
  name            = "${var.name}-ecs-service"
  cluster         = aws_ecs_cluster.ecs_cluster.id
  task_definition = aws_ecs_task_definition.ecs_task_definition.arn
- desired_count   = 1
+ desired_count   = 2
 
  network_configuration {
    subnets         = [aws_subnet.public_subnet.id, aws_subnet.subnet2.id]
@@ -69,9 +69,9 @@ resource "aws_ecs_service" "ecs_service" {
  }
 
  force_new_deployment = true
- placement_constraints {
-   type = "distinctInstance"
- }
+#  placement_constraints {
+#    type = "distinctInstance"
+#  }
 
  triggers = {
    redeployment = plantimestamp()
@@ -95,7 +95,7 @@ resource "aws_ecs_service" "ecs_service" {
 resource "aws_launch_template" "ecs_lt" {
 
  name_prefix   = "${var.name}-ecs-template"
- image_id      = "ami-0bc0e3f05be3e28d5"
+ image_id      = "ami-062c116e449466e7f"
  instance_type = "t3.micro"
  vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 
@@ -126,8 +126,8 @@ resource "aws_autoscaling_group" "ecs_asg" {
  desired_capacity    = 1
  max_size            = 1
  min_size            = 1
+
  launch_template {
-    http_endpoint = "enabled" 
    id      = aws_launch_template.ecs_lt.id
    version = "$Latest"
  }
@@ -167,11 +167,10 @@ resource "aws_lb_target_group" "ecs_tg" {
  name        = "ecs-target-group"
  port        = 80
  protocol    = "HTTP"
- target_type = "instance"
+ target_type = "ip"
  vpc_id      = aws_vpc.vpc.id
 
  health_check {
    path = "/health"
-
  }
 }
