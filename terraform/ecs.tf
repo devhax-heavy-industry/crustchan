@@ -53,7 +53,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
          protocol      = "tcp"
        },
      ],
-     environmentVariables = {
+     environment = {
       AWS_ACCESS_KEY_ID = aws_iam_access_key.crustchan-key.id,
       AWS_ACCESS_KEY_SECRET = aws_iam_access_key.crustchan-key.secret,
      }
