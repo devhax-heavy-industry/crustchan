@@ -80,7 +80,7 @@ route {
         nat_gateway_id = aws_nat_gateway.gw.id
     }
 tags = {
-        Name = "Main Route Table for Private subnet"
+        Name = "Main Route Table for Private subnets"
     }
 }
 
@@ -119,11 +119,11 @@ tags = {
         Name = "Route Table for the Private Subnet"
     }
 }
-resource "aws_route_table_association" "rt_associate_private_2" {
-    subnet_id = aws_subnet.private_subnet2.id
+resource "aws_route_table_association" "rt_associate_private_1" {
+    subnet_id = aws_subnet.private_subnet.id
     route_table_id = aws_route_table.rt_private.id
 }
 resource "aws_route_table_association" "rt_associate_private_2" {
-    subnet_id = aws_subnet.private_subnet.id
+    subnet_id = aws_subnet.private_subnet2.id
     route_table_id = aws_route_table.rt_private.id
 }
