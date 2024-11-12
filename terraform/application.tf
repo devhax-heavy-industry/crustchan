@@ -303,8 +303,8 @@ resource "aws_lambda_event_source_mapping" "dynamodb-stream-to-lambda" {
   function_name     = module.lambda_function.lambda_function_arn
   starting_position = "LATEST"
 }
-resource "aws_ecr_repository" "docker_repo" {
-  name                 = "docker_repo"
+resource "aws_ecr_repository" "crustchan-repo" {
+  name                 = "crustchan"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
