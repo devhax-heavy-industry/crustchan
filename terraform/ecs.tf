@@ -81,6 +81,16 @@ resource "aws_iam_user" "crustchan" {
   name = "crustchan-api"
   path = "/crustchan/"
 }
+resource "aws_iam_group" "crustchan-api" {
+  name = "crustchan-api"
+}
+resource "aws_iam_user_group_membership" "crustchan" {
+  user = aws_iam_user.crustchan.name
+
+  groups = [
+    aws_iam_group.crustchan-api.name,
+  ]
+}
 
 resource "aws_ecs_service" "ecs_service" {
  name            = "${var.name}-ecs-service"
