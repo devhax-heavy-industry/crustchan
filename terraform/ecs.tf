@@ -53,10 +53,10 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
          protocol      = "tcp"
        },
      ],
-     environment = {
-      AWS_ACCESS_KEY_ID = aws_iam_access_key.crustchan-key.id,
-      AWS_ACCESS_KEY_SECRET = aws_iam_access_key.crustchan-key.secret,
-     }
+     environment = [
+      {name = AWS_ACCESS_KEY_ID, value= aws_iam_access_key.crustchan-key.id},
+      {name = AWS_ACCESS_KEY_SECRET, value=aws_iam_access_key.crustchan-key.secret},
+     ]
       logConfiguration = {
         logDriver = "awslogs",
         options = {
