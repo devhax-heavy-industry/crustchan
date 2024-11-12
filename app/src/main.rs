@@ -82,5 +82,7 @@ async fn main() {
     let _admin = check_for_admin_user().await;
 
     // start the http server
+
+    info!("Starting warp...");
     warp::serve(serve_routes).run((Ipv4Addr::LOCALHOST, port)).await
 }
