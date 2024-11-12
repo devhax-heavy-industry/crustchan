@@ -42,6 +42,9 @@ impl reject::Reject for HashError {}
 pub struct InvalidPost;
 impl reject::Reject for InvalidPost {}
 
+#[derive(Debug)]
+pub struct InvalidDBConfig;
+impl reject::Reject for InvalidDBConfig {}
 
 
 pub enum Rejections {

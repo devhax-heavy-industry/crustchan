@@ -13,9 +13,9 @@ use auth::hash_password;
 use board::board_routes;
 use crustchan::dynamodb;
 use crustchan::models::Admin;
-use crustchan::rejections::handle_rejection;
+use crustchan::rejections::{handle_rejection, InvalidDBConfig};
 use post::post_routes;
-use tracing::info;
+use tracing::{info, error};
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{Filter, Rejection};
 
@@ -37,8 +37,17 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
                 ..Default::default()
             };
             let _created_admin_output = dynamodb::create_admin(admin_user.clone()).await;
-            let created_admin: Admin = dynamodb::get_admin_user(admin_user.username).await.unwrap();
-            return Ok(created_admin);
+            let created_admin: Result<Admin,Rejection> = dynamodb::get_admin_user(admin_user.username).await;
+            match (created_admin) {
+                Ok(admin) => {
+                    info!("Admin user created successfully");
+                    return Ok(admin);
+                }
+                Err(e) => {
+                    error!("Error creating admin user: {e:?}");
+                    Err(warp::reject::custom(InvalidDBConfig))
+                }
+            }
         }
     }
 }

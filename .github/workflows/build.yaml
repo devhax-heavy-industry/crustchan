@@ -37,7 +37,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
       - name: Install run-script
-        run: cargo install cargo-run-script
+        run: which cargo-run-script ||cargo install cargo-run-script
       - name: Build API server
         run: cd app && cargo build --release --bin crustchan-api
       - name: Build Lambda
