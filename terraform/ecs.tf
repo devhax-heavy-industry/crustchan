@@ -56,6 +56,9 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
      environment = [
       {name = "AWS_ACCESS_KEY_ID", value= "${aws_iam_access_key.crustchan-key.id}"},
       {name = "AWS_ACCESS_KEY_SECRET", value= "${aws_iam_access_key.crustchan-key.secret}"},
+      {name = "AWS_REGION", value= "us-west-2"},
+      {name = "AWS_BUCKET_NAME", value= "crustchan-resources"},
+      {name = "RUST_LOG", value="info, crustchan-api=trace, crustchan=trace"},
      ]
       logConfiguration = {
         logDriver = "awslogs",
