@@ -22,7 +22,7 @@ resource "aws_security_group" "ec2_security_group" {
   name        = "cc-security-group"
   description = "security group for ec2 instances"
 
-  vpc_id      = aws_vpc.vpc.id
+  vpc_id = aws_vpc.vpc.id
 
   ingress {
     from_port   = 22
@@ -54,6 +54,7 @@ resource "aws_security_group" "ec2_security_group" {
 
   tags = {
     environment = var.environment
+    Name = "cc-security-group"
   }
 }
 
@@ -64,9 +65,9 @@ resource "aws_key_pair" "ec2_key_pair" {
 
 resource "aws_s3_bucket" "app_resources" {
   bucket = "crustchan-resources"
-  
+
   tags = {
-    name = var.name
+    name        = var.name
     environment = var.environment
   }
 }
@@ -75,76 +76,76 @@ resource "aws_s3_bucket_policy" "allow_from_rekognition" {
   bucket = aws_s3_bucket.app_resources.id
 
   policy = jsonencode({
-	"Version": "2012-10-17",
-	"Statement": [
-		{
-			"Sid": "Allow Rekognition",
-			"Effect": "Allow",
-			"Principal": {
-				"Service": "rekognition.amazonaws.com"
-			},
-			"Action": "s3:*",
-			"Resource": "arn:aws:s3:::crustchan-resources"
-		},
-		{
-			"Sid": "allow-account-access-from-api-server",
-			"Effect": "Allow",
-			"Principal": {
-				"AWS": "arn:aws:iam::${var.account_id}:role/api_server_role"
-			},
-			"Action": "s3:*",
-			"Resource": "arn:aws:s3:::crustchan-resources/*"
-		},
-		{
-			"Sid": "allow-account-access-from-account",
-			"Effect": "Allow",
-			"Principal": {
-				"AWS": "arn:aws:iam::${var.account_id}:root"
-			},
-			"Action": "s3:*",
-			"Resource": "arn:aws:s3:::crustchan-resources/*"
-		},
-    {
-			"Sid": "DenyPublicListPutEtc",
-			"Effect": "Deny",
-			"Principal": {
-				"AWS": "*"
-			},
-			"Action": [
-				"s3:PutObject",
-				"s3:DeleteObject"
-			],
-			"Resource": "arn:aws:s3:::crustchan-resources/*",
-			"Condition": {
-				"ForAnyValue:StringNotEquals": {
-					"aws:PrincipalAccount": "${var.account_id}"
-				}
-			}
-		},
-		{
-			"Sid": "DenyPublicBucketStuff",
-			"Effect": "Deny",
-			"Principal": {
-				"AWS": "*"
-			},
-			"Action": "s3:ListBucket",
-			"Resource": "arn:aws:s3:::crustchan-resources",
-			"Condition": {
-				"ForAnyValue:StringNotEquals": {
-					"aws:PrincipalAccount": "${var.account_id}"
-				}
-			}
-		},
-		{
-			"Sid": "AllowPublicGetObject",
-			"Effect": "Allow",
-			"Principal": {
-				"AWS": "*"
-			},
-			"Action": "s3:GetObject",
-			"Resource": "arn:aws:s3:::crustchan-resources/*"
-		}
-	]
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Sid" : "Allow Rekognition",
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "rekognition.amazonaws.com"
+        },
+        "Action" : "s3:*",
+        "Resource" : "arn:aws:s3:::crustchan-resources"
+      },
+      {
+        "Sid" : "allow-account-access-from-api-server",
+        "Effect" : "Allow",
+        "Principal" : {
+          "AWS" : "arn:aws:iam::${var.account_id}:role/api_server_role"
+        },
+        "Action" : "s3:*",
+        "Resource" : "arn:aws:s3:::crustchan-resources/*"
+      },
+      {
+        "Sid" : "allow-account-access-from-account",
+        "Effect" : "Allow",
+        "Principal" : {
+          "AWS" : "arn:aws:iam::${var.account_id}:root"
+        },
+        "Action" : "s3:*",
+        "Resource" : "arn:aws:s3:::crustchan-resources/*"
+      },
+      {
+        "Sid" : "DenyPublicListPutEtc",
+        "Effect" : "Deny",
+        "Principal" : {
+          "AWS" : "*"
+        },
+        "Action" : [
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ],
+        "Resource" : "arn:aws:s3:::crustchan-resources/*",
+        "Condition" : {
+          "ForAnyValue:StringNotEquals" : {
+            "aws:PrincipalAccount" : "${var.account_id}"
+          }
+        }
+      },
+      {
+        "Sid" : "DenyPublicBucketStuff",
+        "Effect" : "Deny",
+        "Principal" : {
+          "AWS" : "*"
+        },
+        "Action" : "s3:ListBucket",
+        "Resource" : "arn:aws:s3:::crustchan-resources",
+        "Condition" : {
+          "ForAnyValue:StringNotEquals" : {
+            "aws:PrincipalAccount" : "${var.account_id}"
+          }
+        }
+      },
+      {
+        "Sid" : "AllowPublicGetObject",
+        "Effect" : "Allow",
+        "Principal" : {
+          "AWS" : "*"
+        },
+        "Action" : "s3:GetObject",
+        "Resource" : "arn:aws:s3:::crustchan-resources/*"
+      }
+    ]
   })
 }
 
@@ -162,11 +163,11 @@ resource "aws_s3_bucket_website_configuration" "app_resources" {
 }
 
 resource "aws_dynamodb_table" "crustchan_posts" {
-  name           = "crustchan-posts"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "id"
+  name         = "crustchan-posts"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
   # range_key = "created_at"
-  stream_enabled	= true
+  stream_enabled   = true
   stream_view_type = "NEW_IMAGE"
   attribute {
     name = "id"
@@ -190,91 +191,91 @@ resource "aws_dynamodb_table" "crustchan_posts" {
     type = "S"
   }
 
-  
-    global_secondary_index {
-    name               = "board-index"
-    hash_key           = "board_id"
-    range_key = "created_at"
-    projection_type    = "ALL"
+
+  global_secondary_index {
+    name            = "board-index"
+    hash_key        = "board_id"
+    range_key       = "created_at"
+    projection_type = "ALL"
   }
   global_secondary_index {
-    name               = "ip-index"
-    hash_key           = "ip"
-    range_key = "created_at"
-    projection_type    = "ALL"
+    name            = "ip-index"
+    hash_key        = "ip"
+    range_key       = "created_at"
+    projection_type = "ALL"
   }
   global_secondary_index {
-    name               = "OP-index"
-    hash_key           = "op"
-    range_key = "created_at"
-    projection_type    = "ALL"
+    name            = "OP-index"
+    hash_key        = "op"
+    range_key       = "created_at"
+    projection_type = "ALL"
   }
 
   tags = {
-    name = var.name
+    name        = var.name
     environment = var.environment
   }
-  
+
 }
 
 
 resource "aws_dynamodb_table" "crustchan_boards" {
-  name           = "crustchan-boards"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "id"
-  range_key = "created_at"
+  name         = "crustchan-boards"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+  range_key    = "created_at"
   attribute {
     name = "id"
     type = "S"
   }
-    attribute {
+  attribute {
     name = "name"
     type = "S"
   }
-    attribute {
+  attribute {
     name = "created_at"
     type = "S"
   }
 
-    global_secondary_index {
-    name               = "name-index"
-    hash_key           = "name"
-    range_key = "created_at"
-    projection_type    = "ALL"
+  global_secondary_index {
+    name            = "name-index"
+    hash_key        = "name"
+    range_key       = "created_at"
+    projection_type = "ALL"
   }
   tags = {
-    name = var.name
+    name        = var.name
     environment = var.environment
   }
 }
 
 
 resource "aws_dynamodb_table" "crustchan_admin" {
-  name           = "crustchan-admin"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "id"
-  range_key = "created_at"
+  name         = "crustchan-admin"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+  range_key    = "created_at"
   attribute {
     name = "id"
     type = "S"
   }
-    attribute {
+  attribute {
     name = "username"
     type = "S"
   }
-    attribute {
+  attribute {
     name = "created_at"
     type = "S"
   }
 
-    global_secondary_index {
-    name               = "username-index"
-    hash_key           = "username"
-    range_key = "created_at"
-    projection_type    = "ALL"
+  global_secondary_index {
+    name            = "username-index"
+    hash_key        = "username"
+    range_key       = "created_at"
+    projection_type = "ALL"
   }
   tags = {
-    name = var.name
+    name        = var.name
     environment = var.environment
   }
 }
@@ -282,17 +283,17 @@ module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "7.14.0"
 
-  function_name = "crustchan-approve-post"
-  handler       = "approve_post_handler"
-  runtime       = "provided.al2023"
-  architectures = ["arm64"]
+  function_name          = "crustchan-approve-post"
+  handler                = "approve_post_handler"
+  runtime                = "provided.al2023"
+  architectures          = ["arm64"]
   create_package         = false
   local_existing_package = "../app/target/lambda/crustchan-approve-post/bootstrap.zip"
   environment_variables = {
     RUST_LOG = "crustchan-approve-post::debug"
   }
   tags = {
-    name = var.name
+    name        = var.name
     environment = var.environment
   }
   ignore_source_code_hash = true
@@ -311,7 +312,7 @@ resource "aws_ecr_repository" "crustchan-repo" {
     scan_on_push = true
   }
   tags = {
-    name = var.name
+    name        = var.name
     environment = var.environment
   }
 }

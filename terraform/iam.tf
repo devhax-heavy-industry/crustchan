@@ -19,7 +19,7 @@ resource "aws_iam_role" "api_server_role" {
 
 resource "aws_iam_instance_profile" "crustchan_api_profile" {
   name = "crustchan-api-profile"
-  role = "${aws_iam_role.api_server_role.name}"
+  role = aws_iam_role.api_server_role.name
 }
 
 data "aws_iam_policy" "rekognition_service_role" {
@@ -40,13 +40,13 @@ data "aws_iam_policy" "s3_put_object_access" {
 }
 
 resource "aws_iam_role_policy_attachment" "api_dynamodb_service_role_policy_attach" {
-   role       = "${aws_iam_role.api_server_role.name}"
-   policy_arn = "${data.aws_iam_policy.dynamodb_access.arn}"
+  role       = aws_iam_role.api_server_role.name
+  policy_arn = data.aws_iam_policy.dynamodb_access.arn
 
 }
 resource "aws_iam_role_policy_attachment" "api_s3_service_role_policy_attach" {
-   role       = "${aws_iam_role.api_server_role.name}"
-   policy_arn = "${data.aws_iam_policy.s3_read_access.arn}"
+  role       = aws_iam_role.api_server_role.name
+  policy_arn = data.aws_iam_policy.s3_read_access.arn
 }
 
 
@@ -68,13 +68,13 @@ resource "aws_iam_role" "app_lambda_role" {
   })
 }
 resource "aws_iam_role_policy_attachment" "lambda_rekognition_service_role_policy_attach" {
-   role       = "${aws_iam_role.app_lambda_role.name}"
-   policy_arn = "${data.aws_iam_policy.rekognition_service_role.arn}"
+  role       = aws_iam_role.app_lambda_role.name
+  policy_arn = data.aws_iam_policy.rekognition_service_role.arn
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_dynamodb_service_role_policy_attach" {
-   role       = "${aws_iam_role.app_lambda_role.name}"
-   policy_arn = "${data.aws_iam_policy.dynamodb_access.arn}"
+  role       = aws_iam_role.app_lambda_role.name
+  policy_arn = data.aws_iam_policy.dynamodb_access.arn
 }
 
 
@@ -91,14 +91,14 @@ resource "aws_iam_role" "ecsTaskExecutionRole" {
         Sid    = ""
         Principal = {
           Service = ["ec2.amazonaws.com",
-                      "ecs-tasks.amazonaws.com",
-                      "ecs.amazonaws.com"]
+            "ecs-tasks.amazonaws.com",
+          "ecs.amazonaws.com"]
         }
       },
     ]
   })
 }
 resource "aws_iam_role_policy_attachment" "ecs_service_role_policy_attach" {
-   role       = "${aws_iam_role.ecsTaskExecutionRole.name}"
-   policy_arn = "${data.aws_iam_policy.ecs_task_execution.arn}"
+  role       = aws_iam_role.ecsTaskExecutionRole.name
+  policy_arn = data.aws_iam_policy.ecs_task_execution.arn
 }

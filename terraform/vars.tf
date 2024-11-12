@@ -31,9 +31,9 @@ variable "aws_secondary_az" {
 }
 variable "AWS_ACCESS_KEY_ID" {
   description = "value of AWS_ACCESS_KEY_ID"
-  default =""
+  default     = ""
 }
 variable "AWS_SECRET_ACCESS_KEY" {
   description = "value of AWS_SECRET"
-  default =""
+  default     = ""
 }
