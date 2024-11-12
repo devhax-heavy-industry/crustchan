@@ -42,7 +42,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
  container_definitions = jsonencode([
    {
      name      = var.name
-     image     = "${aws_ecr_repository.crustchan-repo.repository_url}/${var.name}:latest"
+     image     = "${aws_ecr_repository.crustchan-repo.repository_url}:latest"
      cpu       = 512
      memory    = 512
      essential = true
