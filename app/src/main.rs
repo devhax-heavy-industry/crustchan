@@ -67,7 +67,7 @@ async fn main() {
     let port_key = "FUNCTIONS_CUSTOMHANDLER_PORT";
     let port: u16 = match env::var(port_key) {
         Ok(val) => val.parse().expect("Custom Handler port is not a number!"),
-        Err(_) => 80,
+        Err(_) => 3000,
     };
 
     // load up our project's routes
@@ -77,7 +77,7 @@ async fn main() {
         .with(warp::log("crustchan-api"))
         .with(warp::trace::request())
         .recover(handle_rejection);
-
+    info!("Starting server on port: {}", port);
     // check for the existence of an admin user, creating one if not found
     let _admin = check_for_admin_user().await;
 

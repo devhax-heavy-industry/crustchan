@@ -48,11 +48,23 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
      essential = true
      portMappings = [
        {
-         containerPort = 80
-         hostPort      = 80
+         containerPort = 3000
+         hostPort      = 3000
          protocol      = "tcp"
-       }
-     ]
+       },
+     ],
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+            awslogs-group= "/ecs/crustchan-ecs-task",
+            mode= "non-blocking",
+            awslogs-create-group= "true",
+            max-buffer-size="25m",
+            awslogs-region = "us-west-2",
+            awslogs-stream-prefix = "ecs"
+        },
+      }
+    
    }
  ])
 }
@@ -85,7 +97,7 @@ resource "aws_ecs_service" "ecs_service" {
  load_balancer {
    target_group_arn = aws_lb_target_group.ecs_tg.arn
    container_name   = var.name
-   container_port   = 80
+   container_port   = 3000
  }
  depends_on = [aws_autoscaling_group.ecs_asg]
 }
@@ -166,7 +178,7 @@ resource "aws_lb_listener" "ecs_alb_listener" {
 
 resource "aws_lb_target_group" "ecs_tg" {
  name        = "ecs-target-group"
- port        = 80
+ port        = 3000
  protocol    = "HTTP"
  target_type = "ip"
  vpc_id      = aws_vpc.vpc.id

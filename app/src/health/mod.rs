@@ -1,5 +1,5 @@
 use warp::filters::BoxedFilter;
-use warp::{Filter, Reply};
+use warp::Reply;
 
 mod handlers;
 mod routes;
