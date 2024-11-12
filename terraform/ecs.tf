@@ -53,6 +53,10 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
          protocol      = "tcp"
        },
      ],
+     environmentVariables = {
+      AWS_ACCESS_KEY_ID = aws_iam_access_key.crustchan-key.id,
+      AWS_ACCESS_KEY_SECRET = aws_iam_access_key.crustchan-key.secret,
+     }
       logConfiguration = {
         logDriver = "awslogs",
         options = {
@@ -67,6 +71,15 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
     
    }
  ])
+}
+
+resource "aws_iam_access_key" "crustchan-key" {
+  user    = aws_iam_user.crustchan.name
+}
+
+resource "aws_iam_user" "crustchan" {
+  name = "crustchan-api"
+  path = "/crustchan/"
 }
 
 resource "aws_ecs_service" "ecs_service" {

@@ -10,6 +10,7 @@ use rusoto_dynamodb::{
     QueryInput, 
     ScanInput,
 };
+use rusoto_sts::{StsClient, StsAssumeRoleSessionCredentialsProvider};
 use serde::Deserialize;
 use serde_dynamo::{from_item, to_item};
 use std::error::Error;
@@ -38,6 +39,8 @@ pub async fn get_client() -> &'static DynamoDbClient {
         })
         .await
 }
+
+
 
 pub async fn create_post(post: Post) -> Result<PutItemOutput, Box<dyn Error>> {
     let client: &DynamoDbClient = get_client().await;
