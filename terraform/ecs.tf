@@ -54,8 +54,8 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
        },
      ],
      environment = [
-      {name = AWS_ACCESS_KEY_ID, value= aws_iam_access_key.crustchan-key.id},
-      {name = AWS_ACCESS_KEY_SECRET, value=aws_iam_access_key.crustchan-key.secret},
+      {name = "AWS_ACCESS_KEY_ID", value= aws_iam_access_key.crustchan-key.id},
+      {name = "AWS_ACCESS_KEY_SECRET", value=aws_iam_access_key.crustchan-key.secret},
      ]
       logConfiguration = {
         logDriver = "awslogs",
