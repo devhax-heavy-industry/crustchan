@@ -60,7 +60,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         { name = "AWS_BUCKET_NAME", value = "crustchan-resources" },
         { name = "RUST_LOG", value = "info, crustchan-api=trace, crustchan=trace" },
       ],
-      health_check = [ "CMD-SHELL", "curl -f http://localhost:3000/health || exit 1" ]
+      health_check = [ "CMD-SHELL", "curl  http://localhost:3000/health -sSf > /dev/null || exit 1" ]
       logConfiguration = {
         logDriver = "awslogs",
         options = {
