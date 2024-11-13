@@ -11,6 +11,7 @@ use std::net::Ipv4Addr;
 use admin::admin_routes;
 use auth::hash_password;
 use board::board_routes;
+use health::health_routes;
 use crustchan::dynamodb;
 use crustchan::models::Admin;
 use crustchan::rejections::{handle_rejection, InvalidDBConfig};
@@ -38,7 +39,7 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
             };
             let _created_admin_output = dynamodb::create_admin(admin_user.clone()).await;
             let created_admin: Result<Admin,Rejection> = dynamodb::get_admin_user(admin_user.username).await;
-            match (created_admin) {
+            match created_admin {
                 Ok(admin) => {
                     info!("Admin user created successfully");
                     return Ok(admin);
@@ -57,7 +58,8 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
 async fn main() {
     let static_route = warp::fs::dir("static");
     let routes = 
-        board_routes()
+        health_routes()
+        .or(board_routes())
         .or(post_routes())
         .or(admin_routes())
         .or(static_route);
