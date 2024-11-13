@@ -59,7 +59,8 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         { name = "AWS_REGION", value = "us-west-2" },
         { name = "AWS_BUCKET_NAME", value = "crustchan-resources" },
         { name = "RUST_LOG", value = "info, crustchan-api=trace, crustchan=trace" },
-      ]
+      ],
+      health_check = [ "CMD-SHELL", "curl -f http://localhost:3000/health || exit 1" ]
       logConfiguration = {
         logDriver = "awslogs",
         options = {
@@ -99,7 +100,7 @@ resource "aws_ecs_service" "ecs_service" {
   name            = "${var.name}-ecs-service"
   cluster         = aws_ecs_cluster.ecs_cluster.id
   task_definition = aws_ecs_task_definition.ecs_task_definition.arn
-  desired_count   = 2
+  desired_count   = 1
 
   network_configuration {
     subnets         = [aws_subnet.private_subnet.id, aws_subnet.private_subnet2.id]
