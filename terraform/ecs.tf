@@ -33,6 +33,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
   family             = "${var.name}-ecs-task"
   network_mode       = "awsvpc"
   execution_role_arn = aws_iam_role.ecsTaskExecutionRole.arn
+  task_role_arn = aws_iam_role.ecsTaskExecutionRole.arn
   cpu                = 512
   runtime_platform {
     operating_system_family = "LINUX"
@@ -57,6 +58,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         { name = "AWS_ACCESS_KEY_ID", value = "${aws_iam_access_key.crustchan-key.id}" },
         { name = "AWS_ACCESS_KEY_SECRET", value = "${aws_iam_access_key.crustchan-key.secret}" },
         { name = "AWS_REGION", value = "us-west-2" },
+        { name = "FUNCTIONS_CUSTOMHANDLER_PORT", value = "3000" },
         { name = "AWS_BUCKET_NAME", value = "crustchan-resources" },
         { name = "RUST_LOG", value = "info, crustchan-api=trace, crustchan=trace" },
       ],
@@ -105,7 +107,7 @@ resource "aws_ecs_service" "ecs_service" {
   network_configuration {
     subnets         = [aws_subnet.private_subnet.id, aws_subnet.private_subnet2.id]
     security_groups = [aws_security_group.ec2_security_group.id]
-    #  assign_public_ip = true
+    assign_public_ip = false
   }
 
   force_new_deployment = true
@@ -115,6 +117,9 @@ resource "aws_ecs_service" "ecs_service" {
 
   triggers = {
     redeployment = plantimestamp()
+  }
+    lifecycle {
+    ignore_changes = [desired_count]
   }
 
   capacity_provider_strategy {
@@ -127,6 +132,7 @@ resource "aws_ecs_service" "ecs_service" {
     container_name   = var.name
     container_port   = 3000
   }
+  health_check_grace_period_seconds = 30
   depends_on = [aws_autoscaling_group.ecs_asg]
 }
 
@@ -136,7 +142,7 @@ resource "aws_launch_template" "ecs_lt" {
 
   name_prefix            = "${var.name}-ecs-template"
   image_id               = "ami-0b7c527be879b7737"
-  instance_type          = "t3.micro"
+  instance_type          = "t2.micro"
   key_name               = "laptop"
   vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 
