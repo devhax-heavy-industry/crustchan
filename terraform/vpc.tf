@@ -27,7 +27,7 @@ resource "aws_route_table_association" "route_table_association" {
   route_table_id = aws_route_table.route_table.id
 }
 resource "aws_route_table_association" "subnet2_route" {
-  subnet_id      = aws_subnet.subnet2.id
+  subnet_id      = aws_subnet.public_subnet2.id
   route_table_id = aws_route_table.route_table.id
 }
 
@@ -47,19 +47,19 @@ resource "aws_subnet" "public_subnet" {
   map_public_ip_on_launch = true
 
   tags = {
-    environment = var.environment
-    name        = "${var.name}-public-subnet"
+    Environment = var.environment
+    Name        = "${var.name}-public-subnet"
   }
 }
-resource "aws_subnet" "subnet2" {
+resource "aws_subnet" "public_subnet2" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = var.aws_secondary_az
   map_public_ip_on_launch = true
 
   tags = {
-    environment = var.environment
-    Name        = "${var.name}-public-subnet"
+    Environment = var.environment
+    Name        = "${var.name}-public-subnet2"
   }
 }
 
@@ -78,7 +78,7 @@ resource "aws_nat_gateway" "gw" {
 }
 resource "aws_nat_gateway" "gw2" {
   allocation_id = aws_eip.eip2.id
-  subnet_id     = aws_subnet.subnet2.id
+  subnet_id     = aws_subnet.public_subnet2.id
 }
 # Creating Route Table for NAT Gateway
 resource "aws_route_table" "private_nat" {
