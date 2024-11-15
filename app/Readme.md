@@ -17,6 +17,7 @@ RUST_LOG=warn,crustchan-api=info #This can be changed (according to your needs)[
 AWS_ACCESS_KEY_ID=xyz       # the aws user/service role should have write access to S3 and the dynamodb tables created by Terraform.
 AWS_SECRET_ACCESS_KEY=aaa
 S3_BUCKET=name-of-your-bucket # This bucket will hold all uploaded images
+AWS_ROLE_ARN="arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME" The role the service is going to assume
 ```
 
 When you first run crustchan via `cargo run --bin crustchan-api` you'll notice in the logs that an admin user has been created for you. The credentials are below:

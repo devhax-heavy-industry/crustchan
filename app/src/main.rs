@@ -95,5 +95,5 @@ async fn main() {
     // start the http server
 
     info!("Starting warp...");
-    warp::serve(serve_routes).run((Ipv4Addr::LOCALHOST, port)).await
+    warp::serve(serve_routes).run((Ipv4Addr::new(0,0,0,0), port)).await
 }

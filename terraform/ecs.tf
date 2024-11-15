@@ -50,7 +50,10 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
       portMappings = [
         {
           containerPort = 3000
-          hostPort      = 3000
+          protocol      = "tcp"
+        },
+        {
+          containerPort = 22
           protocol      = "tcp"
         },
       ],
@@ -62,6 +65,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         { name = "AWS_BUCKET_NAME", value = "crustchan-resources" },
         { name = "RUST_LOG", value = "info, crustchan-api=trace, crustchan=trace" },
       ],
+      psuedoTerminal = true,
       health_check = [ "CMD-SHELL", "curl  http://localhost:3000/health -sSf > /dev/null || exit 1" ]
       logConfiguration = {
         logDriver = "awslogs",
