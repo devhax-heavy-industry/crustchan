@@ -106,7 +106,7 @@ resource "aws_subnet" "private_subnet" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.0.3.0/24"
   availability_zone       = var.aws_default_az
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = {
     Environment = var.environment
@@ -117,7 +117,7 @@ resource "aws_subnet" "private_subnet2" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.0.4.0/24"
   availability_zone       = var.aws_secondary_az
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = {
     Environment = var.environment

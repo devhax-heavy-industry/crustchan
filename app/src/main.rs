@@ -84,7 +84,7 @@ async fn main() {
     // load up our project's routes
     let serve_routes =
         routes
-        .with(warp::compression::gzip())
+        // .with(warp::compression::gzip())
         .with(warp::log("crustchan-api"))
         .with(warp::trace::request())
         .recover(handle_rejection);
