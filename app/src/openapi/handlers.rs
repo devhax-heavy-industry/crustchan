@@ -3,8 +3,16 @@ use crustchan::response::{GenericResponse, WebResult};
 use tracing::info;
 
 use utoipa::OpenApi;
+
+use crate::board::BoardsApi;
+
+// let openapi = OpenApi::new(Info::new("pet api", "0.1.0"), Paths::new());
+
 #[derive(OpenApi)]
-#[openapi()]
+#[openapi( 
+  nest(
+  (path = "/api/boards", api = BoardsApi)
+),)]
 struct ApiDoc;
 
 #[utoipa::path(

@@ -26,7 +26,7 @@ pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebRe
             Some(filename) => filename.to_string(),
             None => "".to_string(), //return Ok(GenericResponse::new(warp::http::StatusCode::BAD_REQUEST, "Missing filename".to_string())),
         };
-        if filename == "" {
+        if filename.is_empty() {
             let values_res = part
                 .stream()
                 .then(|result| {
@@ -143,8 +143,8 @@ pub async fn upload_to_s3(path:&Path, new_filename:String) -> Result<rusoto_s3::
     file.take(1024 * 1024 * 25).read_to_end(&mut buffer).unwrap();
 
     let request = rusoto_s3::PutObjectRequest {
-        bucket: bucket,
-        key: key,
+        bucket,
+        key,
         body: Some(buffer.into()),
         ..Default::default()
     };

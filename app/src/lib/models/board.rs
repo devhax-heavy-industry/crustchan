@@ -21,14 +21,15 @@ pub struct BoardInput {
     pub sfw: bool,
 }
 
-impl Into<Board> for BoardInput {
-    fn into(self) -> Board {
+impl From<BoardInput> for Board {
+    fn from(board: BoardInput) -> Board {
         Board {
             id: Uuid::new_v4().to_string(),
-            name: self.name,
-            description: self.description,
-            sfw: self.sfw,
+            name: board.name,
+            description: board.description,
+            sfw: board.sfw,
             created_at: chrono::offset::Utc::now(),
         }
     }
 }
+

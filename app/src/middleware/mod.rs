@@ -12,7 +12,7 @@ pub fn cookie_authn() -> impl Filter<Extract = (AuthnToken,), Error = Rejection>
     cookie("token").and_then(cookie_authn_step2)
 }
 async fn cookie_authn_step2(token_str: String) -> Result<AuthnToken, Rejection> {
-    let token = AuthnToken::from_str(&token_str);
+    let token = AuthnToken::at_from_str(&token_str);
     let verified_token = match token {
         Ok(to_verify) => to_verify,
         Err(_) => {

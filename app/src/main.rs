@@ -27,7 +27,7 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
     match admin_user {
         Ok(admin) => {
             info!("An admin user exists");
-            return Ok(admin);
+            Ok(admin)
         }
         Err(e) => {
             info!("No admin user exists, creating one now...{e:?}");
@@ -43,7 +43,7 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
             match created_admin {
                 Ok(admin) => {
                     info!("Admin user created successfully");
-                    return Ok(admin);
+                    Ok(admin)
                 }
                 Err(e) => {
                     error!("Error creating admin user: {e:?}");

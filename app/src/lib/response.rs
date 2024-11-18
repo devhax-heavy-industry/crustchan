@@ -28,10 +28,10 @@ impl Default for GenericResponse {
 }
 impl GenericResponse {
     pub fn new<E: Serialize>(status_code: warp::http::StatusCode, message: E) -> GenericResponse {
-        GenericResponse { status_code: status_code, message: serde_json::to_string(&message).unwrap() }
+        GenericResponse { status_code, message: serde_json::to_string(&message).unwrap() }
     }
     pub fn new_from_string(status_code: warp::http::StatusCode, message: String) -> GenericResponse {
-        GenericResponse { status_code: status_code, message: message.clone() }
+        GenericResponse { status_code, message: message.clone() }
     }
 }
 
@@ -63,7 +63,7 @@ impl Default for ApiError {
 }
 impl ApiError {
     pub fn new(status_code: warp::http::StatusCode, message: String) -> ApiError {
-        ApiError { status_code: status_code, message: message }
+        ApiError { status_code, message }
     }
 }
 impl Reply for ApiError {

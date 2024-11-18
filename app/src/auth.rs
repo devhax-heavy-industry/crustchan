@@ -16,7 +16,7 @@ use warp::Reply;
 use tokio::sync::OnceCell;
 use base64::prelude::*;
 
-const KEYS_FOLDER: &'static str = "./.cache/keys"; // WARNING pass via configMap, use fs::Path
+const KEYS_FOLDER: &str = "./.cache/keys"; // WARNING pass via configMap, use fs::Path
 lazy_static::lazy_static! {
     pub static ref KEYPAIR_AUTHN:KeyPair = KeyPair::from_file_or_new("keypair_tkn_sign").expect("failed generating keypair for token signing");
 }
@@ -32,10 +32,9 @@ pub async fn get_secret_key() -> &'static String {
     static SECRET_KEY: OnceCell<String> = OnceCell::const_new();
     SECRET_KEY
         .get_or_init(|| async {
-            let secret_key = std::env::var("SECRET_KEY").unwrap_or_else(|_| {
+            std::env::var("SECRET_KEY").unwrap_or_else(|_| {
                 "f7sigsef esf fh2dsjrd k56fg fshdj4g,fhjd6we easfra sfda2kg".repeat(8)
-            });
-            secret_key
+            })
         })
         .await
 }
@@ -46,7 +45,7 @@ pub async fn login(username: String, password: String) -> Result<Admin, Rejectio
         .await
         .unwrap();
     verify(admin.password.clone(), password.clone()).await?;
-    return Ok(admin);
+    Ok(admin)
 
 }
 
@@ -76,7 +75,7 @@ impl Claims {
     fn hash(&self) -> [u8; 52] {
         let mut ret = [0u8; 52];
         let mut hasher = Blake2b::new(52);
-        hasher.input(&self.user_id.as_bytes());
+        hasher.input(self.user_id.as_bytes());
         hasher.input(&self.iat.to_be_bytes());
         hasher.input(&self.exp.to_be_bytes());
         hasher.result(&mut ret);
@@ -109,12 +108,12 @@ impl AuthnToken {
         let mut b = Bytes::new();
         b.extend_from_slice(&self.claims.iat.to_be_bytes());
         b.extend_from_slice(&self.claims.exp.to_be_bytes());
-        b.extend_from_slice(&self.claims.user_id.as_bytes());
+        b.extend_from_slice(self.claims.user_id.as_bytes());
         b.extend_from_slice(&self.sig.to_bytes());
         // b.len is 88
         b.to_vec()
     }
-    pub fn from_bytes<'a>(bytes: &'a [u8]) -> Result<Self, AnyErr> {
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, AnyErr> {
         let mut buf = [0u8; 8];
         let mut str_buf = [0u8; 36];
         buf.copy_from_slice(&bytes[0..8]);
@@ -131,11 +130,11 @@ impl AuthnToken {
         })
     }
     pub fn to_str(&self) -> String {
-        BASE64_STANDARD.encode(&self.to_bytes())
+        BASE64_STANDARD.encode(self.to_bytes())
     }
-    pub fn from_str(token: &str) -> Result<Self, AnyErr> {
-        let bytes = BASE64_STANDARD.decode(&token)?;
-        Ok(Self::from_bytes(&bytes)?)
+    pub fn at_from_str(token: &str) -> Result<Self, AnyErr> {
+        let bytes = BASE64_STANDARD.decode(token)?;
+        Ok(Self::from_bytes(&bytes).unwrap())
     }
     pub fn header_val(&self) -> String {
         format!(
@@ -165,17 +164,17 @@ impl KeyPair {
     pub fn verify(&self, message: &[u8], signature: &Signature) -> Result<(), SignatureError> {
         self.0.verify(message, signature)
     }
-    pub fn from_bytes<'a>(bytes: &'a [u8]) -> Result<Self, SignatureError> {
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, SignatureError> {
         Ok(Self(Keypair::from_bytes(bytes)?))
     }
     pub fn to_bytes(&self) -> [u8; 64] {
         self.0.to_bytes()
     }
-    pub fn from_str(s: &str) -> Result<Self, AnyErr> {
+    pub fn kp_from_str(s: &str) -> Result<Self, AnyErr> {
         Ok(Self::from_bytes(&BASE64_STANDARD.decode(s)?.to_vec())?)
     }
     pub fn to_str(&self) -> String {
-        BASE64_STANDARD.encode(self.to_bytes().to_vec())
+        BASE64_STANDARD.encode(self.to_bytes())
     }
     fn to_file(&self, keyfile: &str) -> Result<&Self, AnyErr> {
         fs::create_dir_all(KEYS_FOLDER)?;
@@ -184,7 +183,7 @@ impl KeyPair {
     }
     fn from_file(keyfile: &str) -> Result<Self, AnyErr> {
         let content_str = fs::read_to_string(keyfile)?;
-        Ok(Self::from_str(&content_str)?)
+        Ok(Self::kp_from_str(&content_str).unwrap())
     }
     fn from_file_or_new(keyfile: &str) -> Result<Self, AnyErr> {
         let keyfile = format!("{}/{}", KEYS_FOLDER, keyfile);

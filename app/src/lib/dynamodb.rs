@@ -209,7 +209,7 @@ pub async fn get_any_admin_user() -> Result<Admin, Rejection> {
     };
     let items = items_output.items.unwrap().pop();
     if items.is_none() {
-        return Err::<_, Rejection>(warp::reject::custom(InvalidUser));
+        Err::<_, Rejection>(warp::reject::custom(InvalidUser))
     } else {
         let user: Admin = from_item(items.unwrap()).unwrap();
         Ok(user)

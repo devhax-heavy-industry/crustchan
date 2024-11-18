@@ -5,6 +5,7 @@ use crate::models::Post;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(tag = "type")]
+#[allow(clippy::large_enum_variant)]
 pub enum PostEvent {
     Created { item: Post },
     Updated { old: Post, new: Post },
