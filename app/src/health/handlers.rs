@@ -1,7 +1,6 @@
 use tracing::info;
 use crustchan::response::{GenericResponse, WebResult};
 
-
 #[utoipa::path(
   get,
   path = "/health",

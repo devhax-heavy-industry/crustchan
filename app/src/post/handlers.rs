@@ -17,6 +17,13 @@ use futures::TryStreamExt;
 use futures_util::StreamExt;
 use warp::Buf;
 
+#[utoipa::path(
+    post,
+    path = "/api/posts",
+    responses(
+            (status = 200, description = "Pet found successfully", body = ()),
+    ),
+  )]
 pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebResult {
     info!("post_handler:");
     let mut post: Post = Post::default();
@@ -153,6 +160,13 @@ pub async fn upload_to_s3(path:&Path, new_filename:String) -> Result<rusoto_s3::
     Ok(response)
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/board/{board_id}",
+    responses(
+            (status = 200, description = "Posts found successfully", body = ()),
+    ),
+  )]
 pub async fn list_posts_by_board_handler(board_id: String) -> WebResult {
     info!("list_posts_by_board_handler:");
     let posts = list_posts_by_board(board_id).await.unwrap();

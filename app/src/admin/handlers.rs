@@ -9,6 +9,13 @@ use warp::reply::WithHeader;
 use warp::Rejection;
 use warp::Reply;
 
+#[utoipa::path(
+    get,
+    path = "/api/admin/ban",
+    responses(
+            (status = 200, description = "User successfully banned", body = ()),
+    ),
+  )]
 pub async fn ban_handler(_token: impl Reply) -> WebResult {
     info!("ban_handler:");
     const MESSAGE: &str = "lel ban em all";
@@ -18,6 +25,13 @@ pub async fn ban_handler(_token: impl Reply) -> WebResult {
     Ok(response)
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/admin/board",
+    responses(
+            (status = 200, description = "Board created successfully", body = ()),
+    ),
+  )]
 pub async fn create_board_handler(
     _token: AuthnToken,
     json_body: HashMap<String, String>,
@@ -32,6 +46,13 @@ pub async fn create_board_handler(
     Ok(response)
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/admin/posts_by_ip",
+    responses(
+            (status = 200, description = "Posts found successfully", body = ()),
+    ),
+  )]
 pub async fn admin_lists_posts_by_ip_handler(_token: impl Reply) -> WebResult {
     info!("admin_lists_posts_by_ip_handler:");
     let posts = vec!["post1", "post2", "post3"];
@@ -40,6 +61,13 @@ pub async fn admin_lists_posts_by_ip_handler(_token: impl Reply) -> WebResult {
     Ok(response)
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/admin/login",
+    responses(
+            (status = 200, description = "User logged in successfully", body = ()),
+    ),
+  )]
 pub async fn login_handler(
     json_body: HashMap<String, String>,
 ) -> Result<WithHeader<GenericResponse>, Rejection> {
@@ -84,7 +112,13 @@ pub async fn login_handler(
 }
 
 
-
+#[utoipa::path(
+    post,
+    path = "/api/admin/posts/approve",
+    responses(
+            (status = 200, description = "Post approved successfully", body = ()),
+    ),
+  )]
 pub async fn approve_post_handler(_token: impl Reply, json_body: HashMap<String, String>) -> WebResult {
     info!("approve_post_handler:");
     let post_id = json_body.get("id").unwrap();
@@ -106,6 +140,13 @@ pub async fn approve_post_handler(_token: impl Reply, json_body: HashMap<String,
 
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/admin/posts/reject",
+    responses(
+            (status = 200, description = "Post rejected successfully", body = ()),
+    ),
+  )]
 pub async fn reject_post_handler(_token: impl Reply, json_body: HashMap<String, String>) -> WebResult {
     info!("approve_post_handler:");
     let post_id = json_body.get("id").unwrap();

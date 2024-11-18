@@ -5,14 +5,19 @@ use tracing::info;
 use utoipa::OpenApi;
 
 use crate::board::BoardsApi;
+use crate::health::HealthApi;
+use crate::post::PostsApi;
 
 // let openapi = OpenApi::new(Info::new("pet api", "0.1.0"), Paths::new());
 
 #[derive(OpenApi)]
 #[openapi( 
   nest(
-  (path = "/api/boards", api = BoardsApi)
-),)]
+    (path = "/api/boards", api = BoardsApi),
+    (path = "/api/health", api = HealthApi),
+    (path = "/api/posts", api = PostsApi)
+  ),
+)]
 struct ApiDoc;
 
 #[utoipa::path(

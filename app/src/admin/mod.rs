@@ -1,10 +1,16 @@
 use warp::filters::BoxedFilter;
 use warp::{Filter, Reply};
 
-mod handlers;
+pub mod handlers;
 pub mod routes;
 pub use handlers::*;
 pub use routes::*;
+use utoipa::OpenApi;
+
+#[derive(OpenApi)]
+    #[openapi(paths(ban_handler, login_handler, approve_post_handler))]
+pub struct AdminApi;
+
 
 pub fn admin_routes() -> BoxedFilter<(impl Reply,)> {
     admin_login_route()
