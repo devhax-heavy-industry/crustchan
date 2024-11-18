@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 warp = { version="0.3", features = ["compression", "multipart", "websocket"]}
 tokio = { version = "1", features = ["rt", "macros", "rt-multi-thread"] }
-serde = {version = "1.0.210", features = ["derive"]}
+serde = {version = "1.0.215", features = ["derive"]}
 tracing-subscriber = {version="0.3.18", features = ["env-filter", "fmt", "json"]}
 tracing = {version = "0.1.40", features=["log"]}
 bytes = { version = "0.4.12"}
@@ -39,6 +39,9 @@ base64ct = {version="1.6.0", features = ["std"]}
 rusoto_rekognition = {version="0.48.0", default-features = false, features = ["rustls"]}
 rusoto_credential = "0.48.0"
 rusoto_sts = { version="0.48.0", default-features = false, features = ["rustls"]}
+utoipa-swagger-ui = "8.0.3"
+utoipa = {version= "5.2.0", features=["uuid", "chrono"]}
+utoipauto = "0.2.0"
 
 [features]
 default = ["api-server"]
@@ -67,3 +70,5 @@ test = false
 [package.metadata.scripts]
 build-lambda = "cargo lambda build --output-format zip -F lambda --arm64 --no-default-features"
 build-api = "cargo build --release --bin crustchan-api"
+run-api = "cargo run --bin crustchan-api"
+lint = "cargo build --bin crustchan-api && cargo clippy -- -D warnings"

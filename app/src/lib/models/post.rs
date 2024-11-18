@@ -1,9 +1,10 @@
 use super::{deserialize_dt, serialize_dt};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Clone, Deserialize)]
+#[derive(Debug, Serialize, Clone, Deserialize,ToSchema)]
 pub struct Post {
     pub id: String,
     pub subject: String,
@@ -25,8 +26,11 @@ pub struct Post {
     pub file_dimensions: String,
     pub file_original_name: String,
     #[serde(serialize_with = "serialize_dt", deserialize_with = "deserialize_dt")]
+    #[schema(value_type = String, format = "date-time")]
     pub created_at: DateTime<Utc>,
 }
+
+#[derive(Debug, Serialize, Clone, Deserialize,ToSchema)]
 pub struct PostInput {
     pub subject: String,
     pub text: String,
@@ -40,15 +44,15 @@ pub struct PostInput {
     pub file_original_name: String,
 }
 
-impl Into<Post> for PostInput {
-    fn into(self) -> Post {
+impl From<PostInput> for Post {
+    fn from(post: PostInput) -> Post {
         Post {
             id: Uuid::new_v4().to_string(),
-            subject: self.subject,
-            text: self.text,
-            board_id: self.board_id,
-            poster: self.poster,
-            file: self.file,
+            subject: post.subject,
+            text: post.text,
+            board_id: post.board_id,
+            poster: post.poster,
+            file: post.file,
             ip: "".to_string(),
             deleted: false,
             soft_banned: false,
@@ -58,13 +62,14 @@ impl Into<Post> for PostInput {
             sticky: false,
             public_banned: None,
             op: "NULL".to_string(),
-            file_name: self.file_name,
-            file_size: self.file_size,
-            file_dimensions: self.file_dimensions,
-            file_original_name: self.file_original_name,
+            file_name: post.file_name,
+            file_size: post.file_size,
+            file_dimensions: post.file_dimensions,
+            file_original_name: post.file_original_name,
             created_at: chrono::offset::Utc::now(),
         }
     }
+
 }
 
 impl Default for Post {

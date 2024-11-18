@@ -11,6 +11,7 @@ pub async fn get_post_by_id_handler(_board_id: String, post_id: String) -> WebRe
     Ok(response)
 }
 
+#[utoipa::path(get, path = "/status")]
 pub async fn get_boards_handler() -> WebResult {
     info!("get_boards_handler:");
     let boards = list_boards().await.unwrap();

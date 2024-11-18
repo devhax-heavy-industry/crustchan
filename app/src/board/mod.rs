@@ -2,7 +2,7 @@ use warp::filters::BoxedFilter;
 use warp::{Filter, Reply};
 
 mod handlers;
-mod routes;
+pub mod routes;
 pub use handlers::*;
 pub use routes::*;
 

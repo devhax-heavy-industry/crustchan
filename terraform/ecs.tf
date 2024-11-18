@@ -1,21 +1,21 @@
-resource "aws_ecs_cluster" "ecs_cluster" {
-  name = "${var.name}-ecs-cluster"
-}
+# resource "aws_ecs_cluster" "ecs_cluster" {
+#   name = "${var.name}-ecs-cluster"
+# }
 
-resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
-  name = "${var.name}-capacity-provider"
+# resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
+#   name = "${var.name}-capacity-provider"
 
-  auto_scaling_group_provider {
-    auto_scaling_group_arn = aws_autoscaling_group.ecs_asg.arn
+#   auto_scaling_group_provider {
+#     auto_scaling_group_arn = aws_autoscaling_group.ecs_asg.arn
 
-    managed_scaling {
-      maximum_scaling_step_size = 1000
-      minimum_scaling_step_size = 1
-      status                    = "ENABLED"
-      target_capacity           = 1
-    }
-  }
-}
+#     managed_scaling {
+#       maximum_scaling_step_size = 1000
+#       minimum_scaling_step_size = 1
+#       status                    = "ENABLED"
+#       target_capacity           = 1
+#     }
+#   }
+# }
 
 resource "aws_ecs_cluster_capacity_providers" "capacity_providers" {
   cluster_name = aws_ecs_cluster.ecs_cluster.name
@@ -58,6 +58,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         },
       ],
       environment = [
+        # Yes I know this is bad, but secrets management has no free tier.
         { name = "AWS_ACCESS_KEY_ID", value = "${aws_iam_access_key.crustchan-key.id}" },
         { name = "AWS_ACCESS_KEY_SECRET", value = "${aws_iam_access_key.crustchan-key.secret}" },
         { name = "AWS_REGION", value = "us-west-2" },
@@ -174,7 +175,7 @@ resource "aws_launch_template" "ecs_lt" {
 
 resource "aws_autoscaling_group" "ecs_asg" {
   vpc_zone_identifier = [aws_subnet.private_subnet.id, aws_subnet.private_subnet2.id]
-  desired_capacity    = 1
+  desired_capacity    = 0
   max_size            = 1
   min_size            = 1
 

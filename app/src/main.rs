@@ -4,6 +4,7 @@ pub mod board;
 pub mod middleware;
 pub mod post;
 pub mod health;
+pub mod openapi;
 
 use std::env;
 use std::net::Ipv4Addr;
@@ -15,11 +16,11 @@ use health::health_routes;
 use crustchan::dynamodb;
 use crustchan::models::Admin;
 use crustchan::rejections::{handle_rejection, InvalidDBConfig};
+use openapi::openapi_routes;
 use post::post_routes;
 use tracing::{info, error};
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{Filter, Rejection};
-
 
 pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
     let admin_user = dynamodb::get_any_admin_user().await;
@@ -53,7 +54,6 @@ pub async fn check_for_admin_user() -> Result<Admin, Rejection> {
     }
 }
 
-
 #[tokio::main]
 async fn main() {
     let static_route = warp::fs::dir("static");
@@ -62,6 +62,7 @@ async fn main() {
         .or(board_routes())
         .or(post_routes())
         .or(admin_routes())
+        .or(openapi_routes())
         .or(static_route);
 
     let log_filter = std::env::var("RUST_LOG")
@@ -84,7 +85,6 @@ async fn main() {
     // load up our project's routes
     let serve_routes =
         routes
-        // .with(warp::compression::gzip())
         .with(warp::log("crustchan-api"))
         .with(warp::trace::request())
         .recover(handle_rejection);
@@ -97,3 +97,4 @@ async fn main() {
     info!("Starting warp...");
     warp::serve(serve_routes).run((Ipv4Addr::new(0,0,0,0), port)).await
 }
+

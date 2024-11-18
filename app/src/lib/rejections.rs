@@ -85,7 +85,7 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
     } else if let Some(_e) = err.find::<FileReadError>() {
         message = "FILE_READ_ERROR";
         code = StatusCode::BAD_REQUEST;
-    } else if let Some(_) = err.find::<warp::reject::MethodNotAllowed>() {
+    } else if err.find::<warp::reject::MethodNotAllowed>().is_some() {
         // We can handle a specific error, here METHOD_NOT_ALLOWED,
         // and render it however we want
         info!("MethodNotAllowed {:?}", err);

@@ -33,8 +33,7 @@ pub async fn get_client() -> &'static DynamoDbClient {
     static CLIENT: OnceCell<DynamoDbClient> = OnceCell::const_new();
     CLIENT
         .get_or_init(|| async {
-            let client = DynamoDbClient::new(AWS_REGION);
-            client
+            DynamoDbClient::new(AWS_REGION)
         })
         .await
 }

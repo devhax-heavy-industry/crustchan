@@ -26,18 +26,12 @@ impl Default for GenericResponse {
         }
     }
 }
-impl<'a> GenericResponse {
+impl GenericResponse {
     pub fn new<E: Serialize>(status_code: warp::http::StatusCode, message: E) -> GenericResponse {
-        let mut ret = GenericResponse::default();
-        ret.status_code = status_code;
-        ret.message = serde_json::to_string(&message).unwrap();
-        ret
+        GenericResponse { status_code: status_code, message: serde_json::to_string(&message).unwrap() }
     }
     pub fn new_from_string(status_code: warp::http::StatusCode, message: String) -> GenericResponse {
-        let mut ret = GenericResponse::default();
-        ret.status_code = status_code;
-        ret.message = message.clone();
-        ret
+        GenericResponse { status_code: status_code, message: message.clone() }
     }
 }
 
@@ -67,12 +61,9 @@ impl Default for ApiError {
         }
     }
 }
-impl<'a> ApiError {
+impl ApiError {
     pub fn new(status_code: warp::http::StatusCode, message: String) -> ApiError {
-        let mut ret = ApiError::default();
-        ret.status_code = status_code;
-        ret.message = message; //serde_json::to_string(&message).unwrap();
-        ret
+        ApiError { status_code: status_code, message: message }
     }
 }
 impl Reply for ApiError {

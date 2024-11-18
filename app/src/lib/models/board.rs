@@ -2,8 +2,9 @@ use super::{deserialize_dt, serialize_dt};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone, Deserialize)]
+#[derive(Debug, Serialize, Clone, Deserialize,ToSchema)]
 pub struct Board {
     pub id: String,
     pub name: String,
@@ -13,7 +14,7 @@ pub struct Board {
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Serialize, Clone, Deserialize)]
+#[derive(Debug, Serialize, Clone, Deserialize, ToSchema)]
 pub struct BoardInput {
     pub name: String,
     pub description: String,
