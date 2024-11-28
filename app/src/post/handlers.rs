@@ -19,9 +19,9 @@ use warp::Buf;
 
 #[utoipa::path(
     post,
-    path = "/api/posts",
+    path = "api/posts",
     responses(
-            (status = 200, description = "Pet found successfully", body = ()),
+            (status = 201, description = "Post created successfully", body = ()),
     ),
   )]
 pub async fn post_handler(mut form: FormData, addr: Option<SocketAddr>) -> WebResult {
@@ -162,9 +162,12 @@ pub async fn upload_to_s3(path:&Path, new_filename:String) -> Result<rusoto_s3::
 
 #[utoipa::path(
     get,
-    path = "/api/board/{board_id}",
+    path = "api/posts/board/{board_id}",
+    params(
+        ("board_id" = u64, Path, description = "The board to list posts for"),
+    ),
     responses(
-            (status = 200, description = "Posts found successfully", body = ()),
+            (status = 200, description = "Posts found successfully", body = Vec<Post>),
     ),
   )]
 pub async fn list_posts_by_board_handler(board_id: String) -> WebResult {

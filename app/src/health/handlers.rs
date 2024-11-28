@@ -3,9 +3,9 @@ use crustchan::response::{GenericResponse, WebResult};
 
 #[utoipa::path(
   get,
-  path = "/health",
+  path = "health",
   responses(
-          (status = 200, description = "Pet found successfully", body = ()),
+          (status = 200, description = "still healthy", body = ()),
   ),
 )]
 pub async fn health_handler() -> WebResult {

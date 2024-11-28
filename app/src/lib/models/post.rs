@@ -98,3 +98,9 @@ impl Default for Post {
         }
     }
 }
+
+
+#[derive(Debug, Serialize, Clone, Deserialize, ToSchema)]
+pub struct FetchPostInput {
+    id: String
+}

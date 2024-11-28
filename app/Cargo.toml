@@ -70,5 +70,6 @@ test = false
 [package.metadata.scripts]
 build-lambda = "cargo lambda build --output-format zip -F lambda --arm64 --no-default-features"
 build-api = "cargo build --release --bin crustchan-api"
+watch-api = "cargo watch cargo \"run --bin crustchan-api\""
 run-api = "cargo run --bin crustchan-api"
 lint = "cargo build --bin crustchan-api && cargo clippy -- -D warnings"

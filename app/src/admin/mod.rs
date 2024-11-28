@@ -8,7 +8,7 @@ pub use routes::*;
 use utoipa::OpenApi;
 
 #[derive(OpenApi)]
-    #[openapi(paths(ban_handler, login_handler, approve_post_handler))]
+    #[openapi(paths(ban_handler, login_handler, approve_post_handler, reject_post_handler, create_board_handler))]
 pub struct AdminApi;
 
 

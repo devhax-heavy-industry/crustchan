@@ -13,7 +13,7 @@ pub fn post_route() -> BoxedFilter<(impl Reply,)> {
         .boxed()
 }
 pub fn posts_by_board_route() -> BoxedFilter<(impl Reply,)> {
-    warp::path!("api" / "board" / String)
+    warp::path!("api" / "posts" / "board" / String)
     .and(warp::get())
         .and_then(list_posts_by_board_handler)
         .boxed()

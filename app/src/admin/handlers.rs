@@ -1,8 +1,9 @@
 use crate::auth::{AuthnToken,login};
 use crustchan::dynamodb::{approve_post, create_board, reject_post};
-use crustchan::models::Board;
+use crustchan::models::{Board, FetchPostInput};
 use crustchan::rejections::{InvalidUser, InvalidPost};
 use crustchan::response::{GenericResponse, WebResult};
+use utoipa::ToSchema;
 use std::collections::HashMap;
 use tracing::{error, info};
 use warp::reply::WithHeader;
@@ -11,7 +12,7 @@ use warp::Reply;
 
 #[utoipa::path(
     get,
-    path = "/api/admin/ban",
+    path = "api/admin/ban",
     responses(
             (status = 200, description = "User successfully banned", body = ()),
     ),
@@ -27,9 +28,9 @@ pub async fn ban_handler(_token: impl Reply) -> WebResult {
 
 #[utoipa::path(
     post,
-    path = "/api/admin/board",
+    path = "api/admin/board",
     responses(
-            (status = 200, description = "Board created successfully", body = ()),
+            (status = 200, description = "Board created successfully", body = Board),
     ),
   )]
 pub async fn create_board_handler(
@@ -39,33 +40,40 @@ pub async fn create_board_handler(
     info!("create_board_handler:");
     let json_str = serde_json::to_string(&json_body).unwrap();
     let board: Board = serde_json::from_str(&json_str).unwrap();
-    let __db_board = create_board(board.clone()).await.unwrap();
-    let message: String = format!("board: {:?}", board.clone());
+    let __db_board: rusoto_dynamodb::PutItemOutput = create_board(board.clone()).await.unwrap();
+    // let message: String = format!("board: {:?}", board.clone());
 
-    let response = GenericResponse::new(warp::http::StatusCode::OK, message);
+    let response = GenericResponse::new(warp::http::StatusCode::OK, board.clone());
     Ok(response)
+}
+
+
+#[derive(Debug, Clone, ToSchema)]
+pub struct PostByIpInput {
+    ip: String
 }
 
 #[utoipa::path(
     get,
-    path = "/api/admin/posts_by_ip",
+    path = "api/admin/posts_by_ip",
+    request_body = PostByIpInput,
     responses(
-            (status = 200, description = "Posts found successfully", body = ()),
+            (status = 200, description = "Posts found successfully", body = Vec<String>),
     ),
   )]
 pub async fn admin_lists_posts_by_ip_handler(_token: impl Reply) -> WebResult {
     info!("admin_lists_posts_by_ip_handler:");
     let posts = vec!["post1", "post2", "post3"];
-    let json_string = serde_json::to_string(&posts).unwrap();
-    let response = GenericResponse::new(warp::http::StatusCode::OK, json_string);
+    let response = GenericResponse::new(warp::http::StatusCode::OK, posts);
     Ok(response)
 }
 
 #[utoipa::path(
     post,
-    path = "/api/admin/login",
+    path = "api/admin/login",
     responses(
-            (status = 200, description = "User logged in successfully", body = ()),
+        (status = 200, description = "User logged in successfully", body = ()),
+        (status = 400, description = "Invalid User/pass", body = ()),
     ),
   )]
 pub async fn login_handler(
@@ -112,9 +120,11 @@ pub async fn login_handler(
 }
 
 
+
 #[utoipa::path(
     post,
-    path = "/api/admin/posts/approve",
+    path = "api/admin/posts/approve",
+    request_body = FetchPostInput, 
     responses(
             (status = 200, description = "Post approved successfully", body = ()),
     ),
@@ -142,7 +152,8 @@ pub async fn approve_post_handler(_token: impl Reply, json_body: HashMap<String,
 
 #[utoipa::path(
     post,
-    path = "/api/admin/posts/reject",
+    path = "api/admin/posts/reject",
+    request_body = FetchPostInput, 
     responses(
             (status = 200, description = "Post rejected successfully", body = ()),
     ),

@@ -7,6 +7,7 @@ use utoipa::OpenApi;
 use crate::board::BoardsApi;
 use crate::health::HealthApi;
 use crate::post::PostsApi;
+use crate::admin::AdminApi;
 
 // let openapi = OpenApi::new(Info::new("pet api", "0.1.0"), Paths::new());
 
@@ -14,8 +15,9 @@ use crate::post::PostsApi;
 #[openapi( 
   nest(
     (path = "/api/boards", api = BoardsApi),
-    (path = "/api/health", api = HealthApi),
-    (path = "/api/posts", api = PostsApi)
+    (path = "/", api = HealthApi),
+    (path = "/", api = PostsApi),
+    (path = "/", api = AdminApi)
   ),
 )]
 struct ApiDoc;
